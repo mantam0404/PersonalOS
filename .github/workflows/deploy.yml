@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  administration: write
 
 concurrency:
   group: pages
@@ -41,3 +43,11 @@ jobs:
           publish_dir: ./dist
           publish_branch: gh-pages
           force_orphan: true
+
+      - name: Point GitHub Pages to gh-pages branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/pages" -X PUT \
+            -f 'source[branch]=gh-pages' \
+            -f 'source[path]=/'
