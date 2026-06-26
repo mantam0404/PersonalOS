@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:gh-pages": "BASE_PATH=/PersonalOS/ vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
