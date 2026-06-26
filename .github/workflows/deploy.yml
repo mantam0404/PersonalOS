@@ -8,8 +8,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  administration: write
 
 concurrency:
   group: pages
@@ -17,6 +15,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, 'chore: publish site') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,18 +35,16 @@ jobs:
         env:
           BASE_PATH: /PersonalOS/
 
-      - name: Deploy to gh-pages branch
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          publish_branch: gh-pages
-          force_orphan: true
-
-      - name: Point GitHub Pages to gh-pages branch
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish built site to repo root
         run: |
-          gh api "repos/${GITHUB_REPOSITORY}/pages" -X PUT \
-            -f 'source[branch]=gh-pages' \
-            -f 'source[path]=/'
+          cp -r dist/* .
+          touch .nojekyll
+
+      - name: Commit and push site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f index.html assets icons favicon.svg manifest.webmanifest sw.js workbox-*.js .nojekyll
+          git diff --staged --quiet && echo "No changes to deploy" && exit 0
+          git commit -m "chore: publish site"
+          git push
