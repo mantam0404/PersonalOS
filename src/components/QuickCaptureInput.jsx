@@ -2,7 +2,7 @@ import { useRef, useCallback } from 'react'
 import { Send } from 'lucide-react'
 import { addInboxItem } from '../db'
 
-export function QuickCaptureInput() {
+export function QuickCaptureInput({ inline = false }) {
   const inputRef = useRef(null)
 
   const handleSubmit = useCallback(async (e) => {
@@ -15,11 +15,15 @@ export function QuickCaptureInput() {
     inputRef.current?.focus()
   }, [])
 
+  const formClass = inline
+    ? 'rounded-xl border border-slate-800 bg-slate-900 p-3'
+    : 'fixed bottom-16 left-0 right-0 z-40 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur-md sm:sticky sm:top-14 sm:bottom-auto sm:border-b sm:border-t-0'
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 p-3 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95 sm:sticky sm:top-14 sm:border-b sm:border-t-0"
-      style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      className={formClass}
+      style={inline ? undefined : { paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
     >
       <div className="mx-auto flex max-w-3xl gap-2">
         <input
@@ -28,7 +32,7 @@ export function QuickCaptureInput() {
           placeholder="閃電輸入 — 2 秒捕捉想法..."
           autoComplete="off"
           enterKeyHint="done"
-          className="min-h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 text-base outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:focus:border-blue-400"
+          className="min-h-11 flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 text-base text-slate-100 outline-none transition-colors placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
         />
         <button
           type="submit"

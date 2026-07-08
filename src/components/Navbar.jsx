@@ -9,14 +9,14 @@ export function Navbar() {
   const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95">
+    <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
             OS
           </div>
           <div>
-            <h1 className="text-base font-semibold leading-tight">Personal OS</h1>
+            <h1 className="text-base font-semibold leading-tight text-slate-100">Personal OS</h1>
             <p className="text-xs text-slate-500">行動流水線</p>
           </div>
         </div>
@@ -24,9 +24,7 @@ export function Navbar() {
         <div className="flex items-center gap-1">
           <span
             className={`flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium ${
-              isOnline
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-amber-600 dark:text-amber-400'
+              isOnline ? 'text-green-400' : 'text-amber-400'
             }`}
             title={isOnline ? '已連線' : '離線模式'}
           >
@@ -48,7 +46,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={cycleTheme}
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="rounded-lg p-2 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
             aria-label="切換主題"
           >
             <ThemeIcon size={18} />

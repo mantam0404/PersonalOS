@@ -1,24 +1,28 @@
-import { Navbar } from './components/Navbar'
-import { QuickCaptureInput } from './components/QuickCaptureInput'
-import { InboxList } from './components/InboxList'
-import { TaskList, CompletedTasks } from './components/TaskList'
-import { ProjectBoard } from './components/ProjectBoard'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AppShell } from './components/layout/AppShell'
+import { TodayView } from './views/TodayView'
+import { CaptureView } from './views/CaptureView'
+import { StudyView } from './views/StudyView'
+import { DomainsView } from './views/DomainsView'
 import { useSyncData } from './hooks/useSyncData'
+
+const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
 
 function App() {
   useSyncData()
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <main className="mx-auto max-w-3xl space-y-8 px-4 py-6 pb-28 sm:pb-6">
-        <QuickCaptureInput />
-        <InboxList />
-        <TaskList />
-        <CompletedTasks />
-        <ProjectBoard />
-      </main>
-    </div>
+    <BrowserRouter basename={basename}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<TodayView />} />
+          <Route path="capture" element={<CaptureView />} />
+          <Route path="study" element={<StudyView />} />
+          <Route path="domains" element={<DomainsView />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 

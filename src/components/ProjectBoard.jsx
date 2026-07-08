@@ -1,18 +1,18 @@
 import { useRef, useState } from 'react'
 import { FolderKanban, Plus } from 'lucide-react'
-import { useProjects, useAllTasks } from '../hooks/useIndexedDB'
+import { useProjectsByDomain, useDomains, useAllTasks } from '../hooks/useIndexedDB'
 import { addProject } from '../db'
 import { PriorityBadge } from './ui/Badge'
 
 export function ProjectBoard() {
-  const projects = useProjects()
+  const grouped = useProjectsByDomain()
+  const domains = useDomains()
   const allTasks = useAllTasks()
   const inputRef = useRef(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [selectedDomainId, setSelectedDomainId] = useState('')
 
   const todoTasks = allTasks?.filter((t) => t.status === 'todo') || []
-
-  const unassigned = todoTasks.filter((t) => !t.projectId)
 
   const getProjectTasks = (projectId) =>
     todoTasks.filter((t) => t.projectId === projectId)
@@ -21,31 +21,29 @@ export function ProjectBoard() {
     e.preventDefault()
     const name = inputRef.current?.value?.trim()
     if (!name) return
-    await addProject(name)
+    await addProject(name, { domainId: selectedDomainId || domains?.[0]?.id })
     inputRef.current.value = ''
     setIsAdding(false)
   }
 
-  const columns = [
-    { id: null, name: '未分類', tasks: unassigned },
-    ...(projects || []).map((p) => ({
-      id: p.id,
-      name: p.name,
-      tasks: getProjectTasks(p.id),
-    })),
-  ]
+  const openAddForm = () => {
+    setSelectedDomainId(domains?.[0]?.id || '')
+    setIsAdding(true)
+  }
+
+  if (!grouped) return null
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <FolderKanban size={20} className="text-purple-500" />
-          <h2 className="text-lg font-semibold">專案</h2>
+          <FolderKanban size={20} className="text-purple-400" />
+          <h2 className="text-lg font-semibold">專案 Projects</h2>
         </div>
         <button
           type="button"
-          onClick={() => setIsAdding((v) => !v)}
-          className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-200 px-3 text-xs font-medium hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700"
+          onClick={openAddForm}
+          className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-700 px-3 text-xs font-medium text-slate-300 hover:bg-slate-800"
         >
           <Plus size={14} />
           新增專案
@@ -53,53 +51,86 @@ export function ProjectBoard() {
       </div>
 
       {isAdding && (
-        <form onSubmit={handleAddProject} className="flex gap-2">
+        <form onSubmit={handleAddProject} className="space-y-2 rounded-xl border border-slate-700 bg-slate-900 p-4">
           <input
             ref={inputRef}
             type="text"
             placeholder="專案名稱..."
             autoFocus
-            className="min-h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-600 dark:bg-slate-800"
+            className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-slate-100 outline-none focus:border-blue-500"
           />
+          <select
+            value={selectedDomainId}
+            onChange={(e) => setSelectedDomainId(e.target.value)}
+            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+          >
+            {domains?.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
           <button
             type="submit"
-            className="rounded-lg bg-purple-600 px-4 text-sm font-medium text-white hover:bg-purple-700"
+            className="w-full rounded-lg bg-purple-600 py-2.5 text-sm font-medium text-white hover:bg-purple-700"
           >
             建立
           </button>
         </form>
       )}
 
-      <div className="flex gap-3 overflow-x-auto pb-2">
-        {columns.map((col) => (
-          <div
-            key={col.id ?? 'unassigned'}
-            className="w-64 shrink-0 rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50"
-          >
-            <div className="border-b border-slate-200 px-3 py-2 dark:border-slate-700">
-              <h3 className="text-sm font-medium">{col.name}</h3>
-              <span className="text-xs text-slate-500">{col.tasks.length} 項</span>
-            </div>
-            <ul className="space-y-2 p-2">
-              {col.tasks.length === 0 ? (
-                <li className="rounded-lg border border-dashed border-slate-300 p-4 text-center text-xs text-slate-400 dark:border-slate-600">
-                  尚無任務
-                </li>
-              ) : (
-                col.tasks.map((task) => (
-                  <li
-                    key={task.id}
-                    className="rounded-lg border border-slate-200 bg-white p-2.5 text-sm dark:border-slate-600 dark:bg-slate-800"
-                  >
-                    <p className="mb-1.5 leading-snug">{task.title}</p>
-                    <PriorityBadge priority={task.priority} />
-                  </li>
-                ))
-              )}
-            </ul>
+      {grouped.map(({ domain, projects }) => (
+        <div key={domain.id} className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span
+              className="h-3 w-3 rounded-full"
+              style={{ backgroundColor: domain.color }}
+            />
+            <h3 className="text-sm font-medium text-slate-300">{domain.name}</h3>
+            <span className="text-xs text-slate-500">{projects.length} 專案</span>
           </div>
-        ))}
-      </div>
+
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {projects.length === 0 ? (
+              <div className="w-full rounded-xl border border-dashed border-slate-700 p-4 text-center text-xs text-slate-500">
+                此領域尚無專案
+              </div>
+            ) : (
+              projects.map((project) => {
+                const tasks = getProjectTasks(project.id)
+                return (
+                  <div
+                    key={project.id}
+                    className="w-64 shrink-0 rounded-xl border border-slate-800 bg-slate-900/50"
+                  >
+                    <div className="border-b border-slate-800 px-3 py-2">
+                      <h4 className="text-sm font-medium">{project.name}</h4>
+                      <span className="text-xs text-slate-500">{tasks.length} 項任務</span>
+                    </div>
+                    <ul className="space-y-2 p-2">
+                      {tasks.length === 0 ? (
+                        <li className="rounded-lg border border-dashed border-slate-700 p-4 text-center text-xs text-slate-500">
+                          尚無任務
+                        </li>
+                      ) : (
+                        tasks.map((task) => (
+                          <li
+                            key={task.id}
+                            className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 text-sm"
+                          >
+                            <p className="mb-1.5 leading-snug">{task.title}</p>
+                            <PriorityBadge priority={task.priority} />
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+      ))}
     </section>
   )
 }

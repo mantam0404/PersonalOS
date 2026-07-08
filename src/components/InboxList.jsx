@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { Archive, ArrowRightCircle, Inbox } from 'lucide-react'
-import { useInboxItems, useProjects } from '../hooks/useIndexedDB'
-import { archiveInboxItem, convertInboxToTask, TASK_CONTEXT, TASK_PRIORITY } from '../db'
+import { useInboxItems, useProjects, useDomains } from '../hooks/useIndexedDB'
+import { archiveInboxItem, convertInboxToTask, TASK_PRIORITY } from '../db'
 import { Modal } from './ui/Modal'
 
 export function InboxList() {
   const items = useInboxItems('pending')
   const projects = useProjects()
+  const domains = useDomains()
   const [converting, setConverting] = useState(null)
   const [priority, setPriority] = useState(TASK_PRIORITY.MEDIUM)
-  const [context, setContext] = useState(TASK_CONTEXT.WORK)
+  const [domainId, setDomainId] = useState('')
   const [projectId, setProjectId] = useState('')
 
   const handleArchive = async (id) => {
@@ -20,44 +21,48 @@ export function InboxList() {
     if (!converting) return
     await convertInboxToTask(converting.id, {
       priority,
-      context,
+      domainId: domainId || null,
       projectId: projectId || null,
     })
     setConverting(null)
     setPriority(TASK_PRIORITY.MEDIUM)
-    setContext(TASK_CONTEXT.WORK)
+    setDomainId('')
     setProjectId('')
   }
 
   const openConvert = (item) => {
     setConverting(item)
     setPriority(TASK_PRIORITY.MEDIUM)
-    setContext(TASK_CONTEXT.WORK)
+    setDomainId(domains?.[0]?.id || '')
     setProjectId('')
   }
+
+  const filteredProjects = projects?.filter(
+    (p) => !domainId || p.domainId === domainId,
+  )
 
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-2">
-        <Inbox size={20} className="text-blue-500" />
+        <Inbox size={20} className="text-blue-400" />
         <h2 className="text-lg font-semibold">收件匣</h2>
         {items && (
-          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium dark:bg-slate-700">
+          <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-400">
             {items.length}
           </span>
         )}
       </div>
 
       {!items?.length ? (
-        <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-600">
-          收件匣是空的 — 在下方輸入你的第一個想法
+        <p className="rounded-xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-500">
+          收件匣是空的 — 在上方輸入你的第一個想法
         </p>
       ) : (
         <ul className="space-y-2">
           {items.map((item) => (
             <li
               key={item.id}
-              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800"
+              className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3"
             >
               <p className="flex-1 text-sm leading-relaxed">{item.text}</p>
               <div className="flex shrink-0 gap-1">
@@ -72,7 +77,7 @@ export function InboxList() {
                 <button
                   type="button"
                   onClick={() => handleArchive(item.id)}
-                  className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-200 px-3 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+                  className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-700 px-3 text-xs font-medium text-slate-400 hover:bg-slate-800"
                 >
                   <Archive size={14} />
                   封存
@@ -86,16 +91,14 @@ export function InboxList() {
       <Modal open={!!converting} onClose={() => setConverting(null)} title="轉化為待辦">
         {converting && (
           <div className="space-y-4">
-            <p className="rounded-lg bg-slate-100 p-3 text-sm dark:bg-slate-700">
-              {converting.text}
-            </p>
+            <p className="rounded-lg bg-slate-800 p-3 text-sm">{converting.text}</p>
 
             <div>
               <label className="mb-1 block text-sm font-medium">優先級</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700"
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
               >
                 <option value={TASK_PRIORITY.HIGH}>高</option>
                 <option value={TASK_PRIORITY.MEDIUM}>中</option>
@@ -104,15 +107,20 @@ export function InboxList() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium">情境標籤</label>
+              <label className="mb-1 block text-sm font-medium">領域 Domain</label>
               <select
-                value={context}
-                onChange={(e) => setContext(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700"
+                value={domainId}
+                onChange={(e) => {
+                  setDomainId(e.target.value)
+                  setProjectId('')
+                }}
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
               >
-                <option value={TASK_CONTEXT.WORK}>Work</option>
-                <option value={TASK_CONTEXT.LIFE}>Life</option>
-                <option value={TASK_CONTEXT.ON_THE_GO}>On-the-go</option>
+                {domains?.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -121,10 +129,10 @@ export function InboxList() {
               <select
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700"
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
               >
                 <option value="">未分類</option>
-                {projects?.map((p) => (
+                {filteredProjects?.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
                   </option>

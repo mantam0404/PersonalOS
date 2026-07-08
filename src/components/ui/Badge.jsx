@@ -32,6 +32,18 @@ export function PriorityBadge({ priority }) {
   return <Badge variant={priority}>{PRIORITY_LABELS[priority] || priority}</Badge>
 }
 
+export function DomainBadge({ domain }) {
+  if (!domain) return null
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+      style={{ backgroundColor: `${domain.color}22`, color: domain.color }}
+    >
+      {domain.name}
+    </span>
+  )
+}
+
 export function ContextBadge({ context }) {
   const labels = { work: 'Work', life: 'Life', 'on-the-go': 'On-the-go' }
   return <Badge variant={context}>{labels[context] || context}</Badge>
