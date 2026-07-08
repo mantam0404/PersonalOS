@@ -14,6 +14,10 @@ import {
 export { db } from './schema'
 export * from './constants'
 export * from './services/domains'
+export * from './services/tasks'
+export * from './services/routines'
+export * from './services/study'
+export * from './services/today'
 
 export async function addInboxItem(text, captureType = CAPTURE_TYPE.TEXT) {
   const item = {
