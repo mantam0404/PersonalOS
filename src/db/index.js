@@ -2,64 +2,19 @@ import { db } from './schema'
 import { createId } from './helpers'
 import { getDefaultDomainId } from './services/domains'
 import {
-  INBOX_STATUS,
   TASK_STATUS,
-  TASK_PRIORITY,
-  TASK_CONTEXT,
-  TASK_TYPE,
   PROJECT_STATUS,
-  CAPTURE_TYPE,
 } from './constants'
 
 export { db } from './schema'
 export * from './constants'
 export * from './services/domains'
-
-export async function addInboxItem(text, captureType = CAPTURE_TYPE.TEXT) {
-  const item = {
-    id: createId(),
-    text: text.trim(),
-    rawText: text.trim(),
-    status: INBOX_STATUS.PENDING,
-    captureType,
-    createdAt: Date.now(),
-  }
-  await db.inbox.add(item)
-  return item
-}
-
-export async function archiveInboxItem(id) {
-  await db.inbox.update(id, { status: INBOX_STATUS.ARCHIVED })
-}
-
-export async function convertInboxToTask(inboxId, { priority, domainId, projectId, context }) {
-  const inboxItem = await db.inbox.get(inboxId)
-  if (!inboxItem) return null
-
-  const resolvedDomainId = domainId || (await getDefaultDomainId())
-
-  const task = {
-    id: createId(),
-    title: inboxItem.text,
-    status: TASK_STATUS.TODO,
-    priority: priority || TASK_PRIORITY.MEDIUM,
-    context: context || TASK_CONTEXT.WORK,
-    domainId: resolvedDomainId,
-    type: TASK_TYPE.TASK,
-    isDailyHighlight: false,
-    projectId: projectId || null,
-    sourceInboxId: inboxId,
-    createdAt: Date.now(),
-    lastTouchedAt: Date.now(),
-  }
-
-  await db.transaction('rw', db.inbox, db.tasks, async () => {
-    await db.tasks.add(task)
-    await db.inbox.update(inboxId, { status: INBOX_STATUS.ARCHIVED })
-  })
-
-  return task
-}
+export * from './services/tasks'
+export * from './services/routines'
+export * from './services/study'
+export * from './services/today'
+export * from './services/capture'
+export * from './services/milestones'
 
 export async function completeTask(id) {
   const now = Date.now()
