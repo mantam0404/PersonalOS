@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
-import { FolderKanban, Plus } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { FolderKanban, Plus, ChevronRight } from 'lucide-react'
 import { useProjectsByDomain, useDomains, useAllTasks } from '../hooks/useIndexedDB'
 import { addProject } from '../db'
 import { PriorityBadge } from './ui/Badge'
@@ -103,17 +104,32 @@ export function ProjectBoard() {
                     key={project.id}
                     className="w-64 shrink-0 rounded-xl border border-slate-800 bg-slate-900/50"
                   >
-                    <div className="border-b border-slate-800 px-3 py-2">
-                      <h4 className="text-sm font-medium">{project.name}</h4>
-                      <span className="text-xs text-slate-500">{tasks.length} 項任務</span>
-                    </div>
+                    <Link
+                      to={`/domains/project/${project.id}`}
+                      className="block border-b border-slate-800 px-3 py-2 hover:bg-slate-800/50"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium">{project.name}</h4>
+                        <ChevronRight size={14} className="text-slate-500" />
+                      </div>
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className="text-xs text-slate-500">{tasks.length} 項任務</span>
+                        <span className="text-xs text-purple-400">{project.progress ?? 0}%</span>
+                      </div>
+                      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-slate-800">
+                        <div
+                          className="h-full rounded-full bg-purple-500"
+                          style={{ width: `${project.progress ?? 0}%` }}
+                        />
+                      </div>
+                    </Link>
                     <ul className="space-y-2 p-2">
                       {tasks.length === 0 ? (
                         <li className="rounded-lg border border-dashed border-slate-700 p-4 text-center text-xs text-slate-500">
                           尚無任務
                         </li>
                       ) : (
-                        tasks.map((task) => (
+                        tasks.slice(0, 3).map((task) => (
                           <li
                             key={task.id}
                             className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 text-sm"
@@ -122,6 +138,11 @@ export function ProjectBoard() {
                             <PriorityBadge priority={task.priority} />
                           </li>
                         ))
+                      )}
+                      {tasks.length > 3 && (
+                        <li className="text-center text-xs text-slate-500">
+                          +{tasks.length - 3} 更多
+                        </li>
                       )}
                     </ul>
                   </div>

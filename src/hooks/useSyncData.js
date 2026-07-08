@@ -8,6 +8,9 @@ export function useSyncData() {
       inbox: data.inbox.length,
       tasks: data.tasks.length,
       projects: data.projects.length,
+      domains: data.domains.length,
+      studyItems: data.studyItems.length,
+      milestones: data.milestones.length,
     })
     return data
   }, [])

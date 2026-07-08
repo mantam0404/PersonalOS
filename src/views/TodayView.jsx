@@ -1,3 +1,4 @@
+import { CalendarEvents } from '../components/today/CalendarEvents'
 import { DailyHighlights } from '../components/today/DailyHighlights'
 import { TodayTaskList } from '../components/today/TodayTaskList'
 import { RoutineList } from '../components/today/RoutineList'
@@ -17,6 +18,7 @@ export function TodayView() {
         </p>
       </header>
 
+      <CalendarEvents />
       <ResurfacingCard />
       <DailyHighlights />
       <RoutineList />
