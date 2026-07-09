@@ -331,7 +331,7 @@ export async function connectGoogleCalendar() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      finish(reject, new Error(`Google 授權逾時，請改用 Chrome 開啟 ${origin} 後再試`))
+      finish(reject, new Error('Google 授權逾時，請在 Cursor Ports 面板確認 5173 已開啟後再試'))
     }, 120_000)
 
     const client = buildTokenClient(clientId, {
@@ -352,7 +352,7 @@ export async function connectGoogleCalendar() {
           finish(
             reject,
             new Error(
-              `無法在此預覽視窗完成 Google 授權。請用 Chrome / Safari 開啟 ${origin}，再按「連接 Google Calendar」。`,
+              '無法開啟 Google 授權視窗。請在 Cursor Agent 的 Ports 面板點 5173 開啟預覽後再連接（不要在外部瀏覽器直接輸入 127.0.0.1）。',
             ),
           )
           return

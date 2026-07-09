@@ -147,10 +147,25 @@ export function CalendarEvents() {
         </div>
         {connecting && (
           <p className="mt-2 text-xs text-slate-500">
-            將開啟 Google 授權視窗；若 Cursor 內建預覽無法彈窗，請用 Chrome 開啟此網址後再試。
+            將開啟 Google 授權視窗。請保持在此 Cursor Agent 預覽內操作。
           </p>
         )}
         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+          Cloud Agent 提示：請在 Cursor 右側
+          {' '}
+          <strong>Ports</strong>
+          {' '}
+          面板點
+          {' '}
+          <strong>5173</strong>
+          {' '}
+          開啟應用。若在外部 Chrome 直接輸入
+          {' '}
+          <code className="rounded bg-slate-200 px-1 dark:bg-slate-800">127.0.0.1:5173</code>
+          {' '}
+          會出現「拒絕連線」，因為 dev server 在遠端環境。
+        </p>
         {!isGoogleCalendarConfigured() && (
           <p className="mt-2 text-xs text-slate-500">
             需在 Google Cloud Console 建立 OAuth Client ID，並設定環境變數
