@@ -1,6 +1,7 @@
 const TOKEN_STORAGE_KEY = 'personal-os-google-calendar-token'
 const OAUTH_PENDING_KEY = 'personal-os-google-oauth-pending'
 const OAUTH_REDIRECT_KEY = 'personal-os-google-use-redirect'
+const OAUTH_STARTED_AT_KEY = 'personal-os-google-oauth-started-at'
 const GOOGLE_SCRIPT_URL = 'https://accounts.google.com/gsi/client'
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly'
 const CONNECT_TIMEOUT_MS = 90_000
@@ -61,14 +62,60 @@ export function readOAuthReturnError() {
   const error = search.get('error') || hash.get('error')
   if (!error) return null
 
-  return search.get('error_description')
-    || hash.get('error_description')
-    || error
+  const description = search.get('error_description') || hash.get('error_description') || error
+  return description.replace(/\+/g, ' ')
+}
+
+export function readOAuthReturnToken() {
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+  const accessToken = hash.get('access_token')
+  if (!accessToken) return null
+
+  return {
+    accessToken,
+    expiresIn: Number(hash.get('expires_in') || 3600),
+  }
+}
+
+export function hasOAuthReturnInUrl() {
+  if (readOAuthReturnError()) return true
+  if (readOAuthReturnToken()) return true
+
+  const hash = window.location.hash
+  const search = window.location.search
+  return hash.includes('access_token=')
+    || hash.includes('error=')
+    || search.includes('code=')
+    || search.includes('error=')
+}
+
+export function isOAuthRedirectReturn() {
+  if (!hasOAuthReturnInUrl()) return false
+
+  try {
+    if (sessionStorage.getItem(OAUTH_PENDING_KEY) !== '1') return false
+  } catch {
+    return false
+  }
+
+  if (document.referrer.includes('accounts.google.com')) return true
+  return hasOAuthReturnInUrl()
 }
 
 export function clearOAuthReturnParams() {
   const url = new URL(window.location.href)
-  const oauthKeys = ['error', 'error_description', 'state', 'code']
+  const oauthKeys = [
+    'error',
+    'error_description',
+    'state',
+    'code',
+    'access_token',
+    'token_type',
+    'expires_in',
+    'scope',
+    'authuser',
+    'prompt',
+  ]
   let changed = false
 
   for (const key of oauthKeys) {
@@ -98,6 +145,7 @@ export function clearOAuthReturnParams() {
 function clearOAuthPending() {
   try {
     sessionStorage.removeItem(OAUTH_PENDING_KEY)
+    sessionStorage.removeItem(OAUTH_STARTED_AT_KEY)
   } catch {
     // ignore storage errors
   }
@@ -106,9 +154,14 @@ function clearOAuthPending() {
 function markOAuthPending() {
   try {
     sessionStorage.setItem(OAUTH_PENDING_KEY, '1')
+    sessionStorage.setItem(OAUTH_STARTED_AT_KEY, String(Date.now()))
   } catch {
     // ignore storage errors
   }
+}
+
+export function abortPendingGoogleOAuth() {
+  clearOAuthPending()
 }
 
 function markRedirectPreferred() {
@@ -320,6 +373,13 @@ class PopupFallbackError extends Error {
   }
 }
 
+function isPopupFailure(error) {
+  const message = error?.message || ''
+  return error?.type === 'popup_failed_to_open'
+    || error?.type === 'popup_closed'
+    || /popup/i.test(message)
+}
+
 function connectWithTokenClient(clientId, { uxMode = 'popup', prompt = '' } = {}) {
   return new Promise((resolve, reject) => {
     let settled = false
@@ -344,19 +404,22 @@ function connectWithTokenClient(clientId, { uxMode = 'popup', prompt = '' } = {}
       uxMode,
       onSuccess: (token) => finish(resolve, token),
       onError: (error) => {
-        if (uxMode === 'popup' && (error?.type === 'popup_failed_to_open' || error?.type === 'popup_closed')) {
+        if (uxMode === 'popup' && isPopupFailure(error)) {
           markRedirectPreferred()
           finish(reject, new PopupFallbackError())
           return
         }
 
         const message = error?.message || error?.type || 'Google OAuth 失敗'
+        if (/popup/i.test(message)) {
+          finish(reject, new Error('無法開啟授權視窗，請再按一次「連接 Google Calendar」'))
+          return
+        }
         finish(reject, new Error(message))
       },
     })
 
     if (uxMode === 'redirect') {
-      markOAuthPending()
       markRedirectPreferred()
     }
 
@@ -374,9 +437,12 @@ export function hasPendingGoogleOAuth() {
 
 export async function resumeGoogleCalendarAuth() {
   const clientId = getGoogleClientId()
-  if (!clientId || isGoogleCalendarConnected() || !hasPendingGoogleOAuth()) {
+  if (!clientId || isGoogleCalendarConnected() || !isOAuthRedirectReturn()) {
     return null
   }
+
+  const returnedToken = consumeOAuthReturn()
+  if (returnedToken) return returnedToken
 
   await loadGoogleIdentityScript()
 
@@ -384,6 +450,15 @@ export async function resumeGoogleCalendarAuth() {
     uxMode: 'redirect',
     prompt: '',
   })
+}
+
+export function consumeOAuthReturn() {
+  const returnedToken = readOAuthReturnToken()
+  if (!returnedToken) return null
+
+  storeToken(returnedToken.accessToken, returnedToken.expiresIn)
+  clearOAuthReturnParams()
+  return returnedToken.accessToken
 }
 
 export async function connectGoogleCalendar(options = {}) {
@@ -397,9 +472,18 @@ export async function connectGoogleCalendar(options = {}) {
   const uxMode = options.uxMode || (shouldPreferRedirectOAuth() ? 'redirect' : 'popup')
   const prompt = options.prompt ?? (getStoredToken() ? '' : 'consent')
 
+  if (uxMode === 'redirect') {
+    markOAuthPending()
+    markRedirectPreferred()
+  }
+
   try {
     return await connectWithTokenClient(clientId, { uxMode, prompt })
   } catch (error) {
+    if (uxMode === 'redirect') {
+      clearOAuthPending()
+    }
+
     const shouldFallback = uxMode === 'popup'
       && !options.retried
       && (error?.code === 'POPUP_FALLBACK' || error?.message === 'POPUP_FALLBACK')
@@ -446,7 +530,14 @@ export async function fetchGoogleTodayEvents(accessToken) {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
-    throw new Error(err.error?.message || '無法取得 Google Calendar 資料')
+    const message = err.error?.message || '無法取得 Google Calendar 資料'
+    if (message.includes('has not been used') || message.includes('accessNotConfigured')) {
+      throw new Error('請在 Google Cloud Console 啟用 Google Calendar API')
+    }
+    if (response.status === 403) {
+      throw new Error('沒有日曆讀取權限，請重新連接並允許 Calendar 存取')
+    }
+    throw new Error(message)
   }
 
   const data = await response.json()

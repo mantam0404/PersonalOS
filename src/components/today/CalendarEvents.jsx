@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Calendar, Loader2, RefreshCw, Unlink } from 'lucide-react'
 import {
+  abortPendingGoogleOAuth,
   connectGoogleCalendar,
+  consumeOAuthReturn,
   disconnectGoogleCalendar,
   fetchTodayEvents,
   getOAuthRedirectUriHints,
-  hasPendingGoogleOAuth,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
+  isOAuthRedirectReturn,
   clearCalendarCache,
   readOAuthReturnError,
   clearOAuthReturnParams,
@@ -19,7 +21,7 @@ export function CalendarEvents() {
   const [events, setEvents] = useState([])
   const [connected, setConnected] = useState(() => isGoogleCalendarConnected())
   const [loading, setLoading] = useState(false)
-  const [connecting, setConnecting] = useState(() => hasPendingGoogleOAuth())
+  const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState('')
   const redirectUriHints = getOAuthRedirectUriHints()
 
@@ -53,36 +55,44 @@ export function CalendarEvents() {
       const oauthReturnError = readOAuthReturnError()
       if (oauthReturnError) {
         clearOAuthReturnParams()
+        abortPendingGoogleOAuth()
         clearCalendarCache()
-        setError(`Google 授權失敗：${oauthReturnError}`)
-        emitToast(`Google 授權失敗：${oauthReturnError}`, 'error')
+        if (!cancelled) {
+          setError(`Google 授權失敗：${oauthReturnError}`)
+          emitToast(`Google 授權失敗：${oauthReturnError}`, 'error')
+        }
         return
       }
+
+      if (isOAuthRedirectReturn()) {
+        setConnecting(true)
+        setError('')
+
+        try {
+          const token = consumeOAuthReturn() || await resumeGoogleCalendarAuth()
+          if (cancelled) return
+          if (token || isGoogleCalendarConnected()) {
+            setConnected(true)
+            emitToast('已連接 Google Calendar', 'success')
+            await loadEvents()
+          }
+        } catch (err) {
+          if (cancelled) return
+          abortPendingGoogleOAuth()
+          const message = err.message || '連接失敗'
+          setError(message)
+          emitToast(message, 'error')
+        } finally {
+          if (!cancelled) setConnecting(false)
+        }
+        return
+      }
+
+      abortPendingGoogleOAuth()
 
       if (isGoogleCalendarConnected()) {
         setConnected(true)
         await loadEvents()
-        return
-      }
-
-      if (!hasPendingGoogleOAuth()) return
-
-      setConnecting(true)
-      setError('')
-
-      try {
-        await resumeGoogleCalendarAuth()
-        if (cancelled) return
-        setConnected(true)
-        emitToast('已連接 Google Calendar', 'success')
-        await loadEvents()
-      } catch (err) {
-        if (cancelled) return
-        const message = err.message || '連接失敗'
-        setError(message)
-        emitToast(message, 'error')
-      } finally {
-        if (!cancelled) setConnecting(false)
       }
     }
 
@@ -111,13 +121,14 @@ export function CalendarEvents() {
         emitToast('已連接 Google Calendar', 'success')
         await loadEvents()
       }
-      // Redirect mode navigates away before resolving; no further UI updates needed.
     } catch (err) {
       const message = err.message || '連接失敗'
       setError(message)
       emitToast(message, 'error')
     } finally {
-      setConnecting(false)
+      if (!isGoogleCalendarConnected()) {
+        setConnecting(false)
+      }
     }
   }
 
@@ -127,6 +138,7 @@ export function CalendarEvents() {
     setConnected(false)
     setEvents([])
     setError('')
+    setConnecting(false)
     emitToast('已中斷 Google Calendar 連接', 'info')
   }
 
@@ -150,7 +162,7 @@ export function CalendarEvents() {
         </div>
         {connecting && (
           <p className="mt-2 text-xs text-slate-500">
-            正在導向 Google 授權頁面；若未自動跳轉，請確認已設定 redirect URI。
+            正在導向 Google 授權頁面；完成後會自動回到此頁並載入今日行程。
           </p>
         )}
         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}

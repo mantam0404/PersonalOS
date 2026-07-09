@@ -1,11 +1,14 @@
 import {
+  abortPendingGoogleOAuth,
   connectGoogleCalendar,
+  consumeOAuthReturn,
   disconnectGoogleCalendar,
   fetchGoogleTodayEvents,
   getOAuthRedirectUriHints,
   hasPendingGoogleOAuth,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
+  isOAuthRedirectReturn,
   readOAuthReturnError,
   clearOAuthReturnParams,
   resumeGoogleCalendarAuth,
@@ -14,12 +17,15 @@ import {
 const CACHE_KEY = 'personal-os-calendar-cache'
 
 export {
+  abortPendingGoogleOAuth,
   connectGoogleCalendar,
+  consumeOAuthReturn,
   disconnectGoogleCalendar,
   getOAuthRedirectUriHints,
   hasPendingGoogleOAuth,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
+  isOAuthRedirectReturn,
   readOAuthReturnError,
   clearOAuthReturnParams,
   resumeGoogleCalendarAuth,
