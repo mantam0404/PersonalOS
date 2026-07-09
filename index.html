@@ -9,11 +9,8 @@
     <title>Personal OS</title>
     <script>
       (function () {
-        var theme = localStorage.getItem('personal-os-theme') || 'dark'
-        var isDark =
-          theme === 'dark' ||
-          (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-        if (isDark) document.documentElement.classList.add('dark')
+        var theme = localStorage.getItem('personal-os-theme')
+        if (theme !== 'light') document.documentElement.classList.add('dark')
       })()
     </script>
   </head>
