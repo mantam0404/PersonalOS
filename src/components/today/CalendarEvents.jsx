@@ -4,10 +4,13 @@ import {
   connectGoogleCalendar,
   disconnectGoogleCalendar,
   fetchTodayEvents,
+  getOAuthRedirectUriHints,
   hasPendingGoogleOAuth,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
   clearCalendarCache,
+  readOAuthReturnError,
+  clearOAuthReturnParams,
   resumeGoogleCalendarAuth,
 } from '../../services/calendar'
 import { emitToast } from '../../context/ToastContext'
@@ -16,8 +19,9 @@ export function CalendarEvents() {
   const [events, setEvents] = useState([])
   const [connected, setConnected] = useState(() => isGoogleCalendarConnected())
   const [loading, setLoading] = useState(false)
-  const [connecting, setConnecting] = useState(false)
+  const [connecting, setConnecting] = useState(() => hasPendingGoogleOAuth())
   const [error, setError] = useState('')
+  const redirectUriHints = getOAuthRedirectUriHints()
 
   const loadEvents = useCallback(async () => {
     if (!isGoogleCalendarConnected()) {
@@ -46,6 +50,15 @@ export function CalendarEvents() {
     let cancelled = false
 
     async function bootstrapConnection() {
+      const oauthReturnError = readOAuthReturnError()
+      if (oauthReturnError) {
+        clearOAuthReturnParams()
+        clearCalendarCache()
+        setError(`Google 授權失敗：${oauthReturnError}`)
+        emitToast(`Google 授權失敗：${oauthReturnError}`, 'error')
+        return
+      }
+
       if (isGoogleCalendarConnected()) {
         setConnected(true)
         await loadEvents()
@@ -93,9 +106,12 @@ export function CalendarEvents() {
 
     try {
       await connectGoogleCalendar()
-      setConnected(true)
-      emitToast('已連接 Google Calendar', 'success')
-      await loadEvents()
+      if (isGoogleCalendarConnected()) {
+        setConnected(true)
+        emitToast('已連接 Google Calendar', 'success')
+        await loadEvents()
+      }
+      // Redirect mode navigates away before resolving; no further UI updates needed.
     } catch (err) {
       const message = err.message || '連接失敗'
       setError(message)
@@ -132,6 +148,11 @@ export function CalendarEvents() {
             {connecting ? '連接中…' : '連接 Google Calendar'}
           </button>
         </div>
+        {connecting && (
+          <p className="mt-2 text-xs text-slate-500">
+            正在導向 Google 授權頁面；若未自動跳轉，請確認已設定 redirect URI。
+          </p>
+        )}
         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
         {!isGoogleCalendarConfigured() && (
           <p className="mt-2 text-xs text-slate-500">
@@ -142,9 +163,10 @@ export function CalendarEvents() {
         )}
         {isGoogleCalendarConfigured() && (
           <p className="mt-2 text-xs text-slate-500">
-            若使用重新導向模式，請在 Google Cloud Console 的 Authorized redirect URIs 加入
-            {' '}
-            <code className="rounded bg-slate-200 px-1 dark:bg-slate-800">{window.location.origin}{window.location.pathname}</code>
+            請在 Google Cloud Console 的 Authorized redirect URIs 加入：
+            {redirectUriHints.map((uri) => (
+              <code key={uri} className="mt-1 block rounded bg-slate-200 px-1 dark:bg-slate-800">{uri}</code>
+            ))}
           </p>
         )}
       </section>

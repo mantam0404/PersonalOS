@@ -20,6 +20,11 @@ export function getOAuthRedirectUri() {
   return `${window.location.origin}${window.location.pathname}`
 }
 
+function isLocalDevHost() {
+  const host = window.location.hostname
+  return host === 'localhost' || host === '127.0.0.1' || host === '[::1]'
+}
+
 export function shouldPreferRedirectOAuth() {
   try {
     if (sessionStorage.getItem(OAUTH_REDIRECT_KEY) === '1') return true
@@ -28,10 +33,66 @@ export function shouldPreferRedirectOAuth() {
     // ignore storage errors
   }
 
+  // Popups are blocked in Cursor / embedded previews and many local dev setups.
+  if (isLocalDevHost()) return true
+
   if (window.self !== window.top) return true
 
   const ua = navigator.userAgent || ''
   return /Electron|Cursor/i.test(ua)
+}
+
+export function getOAuthRedirectUriHints() {
+  const current = getOAuthRedirectUri()
+  const hints = new Set([current])
+
+  if (window.location.hostname === '127.0.0.1') {
+    hints.add(`http://localhost:${window.location.port}${window.location.pathname}`)
+  } else if (window.location.hostname === 'localhost') {
+    hints.add(`http://127.0.0.1:${window.location.port}${window.location.pathname}`)
+  }
+
+  return [...hints]
+}
+
+export function readOAuthReturnError() {
+  const search = new URLSearchParams(window.location.search)
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+  const error = search.get('error') || hash.get('error')
+  if (!error) return null
+
+  return search.get('error_description')
+    || hash.get('error_description')
+    || error
+}
+
+export function clearOAuthReturnParams() {
+  const url = new URL(window.location.href)
+  const oauthKeys = ['error', 'error_description', 'state', 'code']
+  let changed = false
+
+  for (const key of oauthKeys) {
+    if (url.searchParams.has(key)) {
+      url.searchParams.delete(key)
+      changed = true
+    }
+  }
+
+  if (url.hash) {
+    const hash = new URLSearchParams(url.hash.replace(/^#/, ''))
+    for (const key of oauthKeys) {
+      if (hash.has(key)) {
+        hash.delete(key)
+        changed = true
+      }
+    }
+    const nextHash = hash.toString()
+    url.hash = nextHash ? `#${nextHash}` : ''
+  }
+
+  if (changed) {
+    window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`)
+  }
 }
 
 function clearOAuthPending() {
@@ -252,6 +313,13 @@ function requestGoogleAccessToken(client, { prompt = '' } = {}) {
   })
 }
 
+class PopupFallbackError extends Error {
+  constructor() {
+    super('POPUP_FALLBACK')
+    this.code = 'POPUP_FALLBACK'
+  }
+}
+
 function connectWithTokenClient(clientId, { uxMode = 'popup', prompt = '' } = {}) {
   return new Promise((resolve, reject) => {
     let settled = false
@@ -265,28 +333,24 @@ function connectWithTokenClient(clientId, { uxMode = 'popup', prompt = '' } = {}
     }
 
     const timeoutId = window.setTimeout(() => {
-      finish(reject, new Error(uxMode === 'popup'
-        ? '授權視窗沒有回應，將改用重新導向模式'
-        : '連接逾時，請再試一次'))
+      if (uxMode === 'popup') {
+        finish(reject, new PopupFallbackError())
+        return
+      }
+      finish(reject, new Error('連接逾時，請再試一次'))
     }, timeoutMs)
 
     const client = createTokenClient(clientId, {
       uxMode,
       onSuccess: (token) => finish(resolve, token),
       onError: (error) => {
-        const message = error?.message || error?.type || 'Google OAuth 失敗'
-
-        if (error?.type === 'popup_closed') {
-          finish(reject, new Error('已取消 Google 授權'))
-          return
-        }
-
-        if (error?.type === 'popup_failed_to_open') {
+        if (uxMode === 'popup' && (error?.type === 'popup_failed_to_open' || error?.type === 'popup_closed')) {
           markRedirectPreferred()
-          finish(reject, new Error('無法開啟授權視窗，請再試一次（將改用重新導向模式）'))
+          finish(reject, new PopupFallbackError())
           return
         }
 
+        const message = error?.message || error?.type || 'Google OAuth 失敗'
         finish(reject, new Error(message))
       },
     })
@@ -336,7 +400,11 @@ export async function connectGoogleCalendar(options = {}) {
   try {
     return await connectWithTokenClient(clientId, { uxMode, prompt })
   } catch (error) {
-    if (uxMode === 'popup' && !options.retried) {
+    const shouldFallback = uxMode === 'popup'
+      && !options.retried
+      && (error?.code === 'POPUP_FALLBACK' || error?.message === 'POPUP_FALLBACK')
+
+    if (shouldFallback) {
       markRedirectPreferred()
       return connectGoogleCalendar({
         uxMode: 'redirect',
