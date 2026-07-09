@@ -42,8 +42,8 @@ export function QuickCaptureInput({ inline = false }) {
   }, [isListening])
 
   const formClass = inline
-    ? 'rounded-xl border border-slate-800 bg-slate-900 p-3'
-    : 'fixed bottom-16 left-0 right-0 z-40 border-t border-slate-800 bg-slate-950/95 p-3 backdrop-blur-md sm:sticky sm:top-14 sm:bottom-auto sm:border-b sm:border-t-0'
+    ? 'rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3'
+    : 'fixed bottom-16 left-0 right-0 z-40 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 p-3 backdrop-blur-md sm:sticky sm:top-14 sm:bottom-auto sm:border-b sm:border-t-0'
 
   return (
     <div className={inline ? '' : formClass} style={inline ? undefined : { paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
@@ -55,7 +55,7 @@ export function QuickCaptureInput({ inline = false }) {
             placeholder="閃電輸入 — 2 秒捕捉想法..."
             autoComplete="off"
             enterKeyHint="done"
-            className="min-h-11 flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 text-base text-slate-100 outline-none transition-colors placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+            className="min-h-11 flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-4 text-base text-slate-900 dark:text-slate-100 outline-none transition-colors placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
           />
           <button
             type="button"
@@ -64,7 +64,7 @@ export function QuickCaptureInput({ inline = false }) {
             className={`flex min-h-11 min-w-11 items-center justify-center rounded-xl border transition-colors ${
               isListening
                 ? 'border-red-500/50 bg-red-500/10 text-red-400'
-                : 'border-slate-700 text-slate-400 hover:border-purple-500 hover:text-purple-400'
+                : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-purple-500 hover:text-purple-400'
             }`}
             aria-label="語音輸入"
           >

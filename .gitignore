@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Deploy artifacts (must not live on main)
+/assets/
+/sw.js
+/workbox-*.js
+/manifest.webmanifest
+/.nojekyll
+/icons/
+/favicon.svg
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

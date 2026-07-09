@@ -25,7 +25,7 @@ export function TodayTaskList() {
         <ListTodo size={20} className="text-blue-400" />
         <h2 className="text-lg font-semibold">今日待辦</h2>
         {tasks && (
-          <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+          <span className="rounded-full bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-400">
             {tasks.length}
           </span>
         )}
@@ -36,7 +36,7 @@ export function TodayTaskList() {
       )}
 
       {!tasks?.length ? (
-        <p className="rounded-xl border border-dashed border-slate-700 p-5 text-center text-sm text-slate-500">
+        <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-5 text-center text-sm text-slate-500">
           沒有待辦 — 從捕捉頁轉化一條記錄
         </p>
       ) : (
@@ -44,7 +44,7 @@ export function TodayTaskList() {
           {tasks.map((task) => (
             <li
               key={task.id}
-              className="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3"
+              className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3"
             >
               <button
                 type="button"

@@ -133,6 +133,7 @@ export async function convertStudySnippetToTask(studyId, snippet, { domainId, pr
       id: createId(),
       sourceId: studyId,
       targetId: task.id,
+      targetType: 'task',
       type: 'derived',
     })
   })

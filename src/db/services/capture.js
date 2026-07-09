@@ -2,7 +2,8 @@ import { db } from '../schema'
 import { createId } from '../helpers'
 import { INBOX_STATUS, TASK_STATUS, TASK_PRIORITY, TASK_TYPE, STUDY_TYPE, STUDY_STATUS, CAPTURE_TYPE } from '../constants'
 import { getDefaultDomainId } from './domains'
-import { processCapture } from '../../services/ai'
+import { processCapture, isMeaningfulText } from '../../services/ai'
+import { emitToast } from '../../context/ToastContext'
 
 function extractTags(text) {
   const matches = text.match(/#([\w\u4e00-\u9fff]+)/g)
@@ -11,10 +12,16 @@ function extractTags(text) {
 }
 
 export async function addInboxItem(text, captureType = CAPTURE_TYPE.TEXT) {
+  const trimmed = text.trim()
+  if (!isMeaningfulText(trimmed)) {
+    emitToast('內容太短或無意義，請重新輸入', 'error')
+    return null
+  }
+
   const item = {
     id: createId(),
-    text: text.trim(),
-    rawText: text.trim(),
+    text: trimmed,
+    rawText: trimmed,
     status: INBOX_STATUS.PENDING,
     captureType,
     aiStatus: 'pending',
@@ -33,31 +40,44 @@ export async function processInboxItem(inboxId) {
 
   try {
     const result = await processCapture(item.rawText || item.text)
+    const cleanedText = result.cleanedText?.trim()
+
+    if (!cleanedText || cleanedText.length < 2) {
+      await db.inbox.update(inboxId, {
+        aiStatus: 'error',
+        text: item.rawText,
+      })
+      emitToast('AI 處理後內容為空，請手動編輯', 'error')
+      return
+    }
 
     await db.inbox.update(inboxId, {
-      cleanedText: result.cleanedText,
+      cleanedText,
       aiClassification: result.classification,
       aiConfidence: result.confidence,
-      text: result.cleanedText,
+      text: cleanedText,
       aiStatus: 'done',
     })
 
     if (result.confidence >= 0.7) {
       if (result.classification === 'task') {
-        await autoConvertToTask(inboxId, result)
+        const task = await autoConvertToTask(inboxId, result)
+        if (task) emitToast(`已自動建立待辦：${task.title.slice(0, 40)}`, 'success')
       } else if (result.classification === 'study') {
-        await autoConvertToStudy(inboxId, result)
+        const study = await autoConvertToStudy(inboxId, result)
+        if (study) emitToast(`已自動建立筆記：${study.title.slice(0, 40)}`, 'success')
       }
     }
   } catch (err) {
     console.error('[Capture] processing failed', err)
     await db.inbox.update(inboxId, { aiStatus: 'error' })
+    emitToast('AI 處理失敗，請手動轉化', 'error')
   }
 }
 
 async function autoConvertToTask(inboxId, result) {
   const inboxItem = await db.inbox.get(inboxId)
-  if (!inboxItem || inboxItem.status !== INBOX_STATUS.PENDING) return
+  if (!inboxItem || inboxItem.status !== INBOX_STATUS.PENDING) return null
 
   const domainId = await getDefaultDomainId()
   const task = {
@@ -81,11 +101,13 @@ async function autoConvertToTask(inboxId, result) {
       aiStatus: 'auto_task',
     })
   })
+
+  return task
 }
 
 async function autoConvertToStudy(inboxId, result) {
   const inboxItem = await db.inbox.get(inboxId)
-  if (!inboxItem || inboxItem.status !== INBOX_STATUS.PENDING) return
+  if (!inboxItem || inboxItem.status !== INBOX_STATUS.PENDING) return null
 
   const domainId = await getDefaultDomainId()
   const tags = extractTags(result.cleanedText)
@@ -111,6 +133,8 @@ async function autoConvertToStudy(inboxId, result) {
       aiStatus: 'auto_study',
     })
   })
+
+  return studyItem
 }
 
 export async function archiveInboxItem(id) {
@@ -142,6 +166,7 @@ export async function convertInboxToTask(inboxId, { priority, domainId, projectI
     await db.inbox.update(inboxId, { status: INBOX_STATUS.ARCHIVED })
   })
 
+  emitToast(`已建立待辦：${task.title.slice(0, 40)}`, 'success')
   return task
 }
 
@@ -173,5 +198,6 @@ export async function convertInboxToStudy(inboxId, { domainId, type, isHighlight
     await db.inbox.update(inboxId, { status: INBOX_STATUS.ARCHIVED })
   })
 
+  emitToast(`已建立筆記：${studyItem.title.slice(0, 40)}`, 'success')
   return studyItem
 }

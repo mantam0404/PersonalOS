@@ -2,62 +2,58 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 const THEME_KEY = 'personal-os-theme'
 
-const AppContext = createContext(null)
-
-function getSystemTheme() {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+const THEME_COLORS = {
+  light: '#f8fafc',
+  dark: '#0f172a',
 }
 
-function resolveTheme(theme) {
-  if (theme === 'system') return getSystemTheme()
-  return theme
+const AppContext = createContext(null)
+
+function normalizeTheme(stored) {
+  return stored === 'light' ? 'light' : 'dark'
+}
+
+function applyThemeClass(theme) {
+  const root = document.documentElement
+  if (theme === 'dark') {
+    root.classList.add('dark')
+  } else {
+    root.classList.remove('dark')
+  }
+  root.style.colorScheme = theme
+
+  const meta = document.querySelector('meta[name="theme-color"]')
+  if (meta) {
+    meta.setAttribute('content', THEME_COLORS[theme])
+  }
 }
 
 export function AppProvider({ children }) {
   const [theme, setThemeState] = useState(() => {
-    return localStorage.getItem(THEME_KEY) || 'dark'
+    const stored = localStorage.getItem(THEME_KEY) || 'dark'
+    const normalized = normalizeTheme(stored)
+    if (stored !== normalized) {
+      localStorage.setItem(THEME_KEY, normalized)
+    }
+    return normalized
   })
 
-  const resolvedTheme = resolveTheme(theme)
-
   useEffect(() => {
-    const root = document.documentElement
-    if (resolvedTheme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-  }, [resolvedTheme])
-
-  useEffect(() => {
-    if (theme !== 'system') return
-
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = () => {
-      const root = document.documentElement
-      if (media.matches) {
-        root.classList.add('dark')
-      } else {
-        root.classList.remove('dark')
-      }
-    }
-    media.addEventListener('change', handler)
-    return () => media.removeEventListener('change', handler)
+    applyThemeClass(theme)
   }, [theme])
 
   const setTheme = (next) => {
-    setThemeState(next)
-    localStorage.setItem(THEME_KEY, next)
+    const normalized = normalizeTheme(next)
+    setThemeState(normalized)
+    localStorage.setItem(THEME_KEY, normalized)
   }
 
   const cycleTheme = () => {
-    const order = ['light', 'dark', 'system']
-    const idx = order.indexOf(theme)
-    setTheme(order[(idx + 1) % order.length])
+    setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
   return (
-    <AppContext.Provider value={{ theme, resolvedTheme, setTheme, cycleTheme }}>
+    <AppContext.Provider value={{ theme, setTheme, cycleTheme }}>
       {children}
     </AppContext.Provider>
   )
