@@ -4,8 +4,6 @@ const OAUTH_REDIRECT_KEY = 'personal-os-google-use-redirect'
 const OAUTH_STARTED_AT_KEY = 'personal-os-google-oauth-started-at'
 const GOOGLE_SCRIPT_URL = 'https://accounts.google.com/gsi/client'
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly'
-const CONNECT_TIMEOUT_MS = 90_000
-const POPUP_CONNECT_TIMEOUT_MS = 20_000
 
 let scriptLoadPromise = null
 
@@ -90,16 +88,7 @@ export function hasOAuthReturnInUrl() {
 }
 
 export function isOAuthRedirectReturn() {
-  if (!hasOAuthReturnInUrl()) return false
-
-  try {
-    if (sessionStorage.getItem(OAUTH_PENDING_KEY) !== '1') return false
-  } catch {
-    return false
-  }
-
-  if (document.referrer.includes('accounts.google.com')) return true
-  return hasOAuthReturnInUrl()
+  return Boolean(readOAuthReturnError() || readOAuthReturnToken())
 }
 
 export function clearOAuthReturnParams() {
@@ -325,106 +314,30 @@ export function loadGoogleIdentityScript() {
   return scriptLoadPromise
 }
 
-function createTokenClient(clientId, { uxMode = 'popup', onSuccess, onError }) {
-  const config = {
+function buildManualOAuthUrl(clientId, { prompt = 'consent' } = {}) {
+  const params = new URLSearchParams({
     client_id: clientId,
+    redirect_uri: getOAuthRedirectUri(),
+    response_type: 'token',
     scope: CALENDAR_SCOPE,
-    ux_mode: uxMode,
-    callback: () => {},
-    error_callback: (error) => {
-      onError(error)
-    },
-  }
-
-  if (uxMode === 'redirect') {
-    config.redirect_uri = getOAuthRedirectUri()
-  }
-
-  const client = window.google.accounts.oauth2.initTokenClient(config)
-
-  client.callback = (response) => {
-    if (response?.error) {
-      onError(new Error(response.error_description || response.error))
-      return
-    }
-
-    if (!response?.access_token) {
-      onError(new Error('未取得 Google 授權，請再試一次'))
-      return
-    }
-
-    storeToken(response.access_token, response.expires_in)
-    onSuccess(response.access_token)
-  }
-
-  return client
-}
-
-function requestGoogleAccessToken(client, { prompt = '' } = {}) {
-  client.requestAccessToken({
+    include_granted_scopes: 'true',
     prompt,
   })
+
+  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
 }
 
-class PopupFallbackError extends Error {
-  constructor() {
-    super('POPUP_FALLBACK')
-    this.code = 'POPUP_FALLBACK'
+export function startManualGoogleCalendarConnect() {
+  const clientId = getGoogleClientId()
+  if (!clientId) {
+    throw new Error('未設定 VITE_GOOGLE_CLIENT_ID，無法連接 Google Calendar')
   }
-}
 
-function isPopupFailure(error) {
-  const message = error?.message || ''
-  return error?.type === 'popup_failed_to_open'
-    || error?.type === 'popup_closed'
-    || /popup/i.test(message)
-}
+  markOAuthPending()
+  markRedirectPreferred()
 
-function connectWithTokenClient(clientId, { uxMode = 'popup', prompt = '' } = {}) {
-  return new Promise((resolve, reject) => {
-    let settled = false
-    const timeoutMs = uxMode === 'popup' ? POPUP_CONNECT_TIMEOUT_MS : CONNECT_TIMEOUT_MS
-
-    const finish = (handler, value) => {
-      if (settled) return
-      settled = true
-      window.clearTimeout(timeoutId)
-      handler(value)
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      if (uxMode === 'popup') {
-        finish(reject, new PopupFallbackError())
-        return
-      }
-      finish(reject, new Error('連接逾時，請再試一次'))
-    }, timeoutMs)
-
-    const client = createTokenClient(clientId, {
-      uxMode,
-      onSuccess: (token) => finish(resolve, token),
-      onError: (error) => {
-        if (uxMode === 'popup' && isPopupFailure(error)) {
-          markRedirectPreferred()
-          finish(reject, new PopupFallbackError())
-          return
-        }
-
-        const message = error?.message || error?.type || 'Google OAuth 失敗'
-        if (/popup/i.test(message)) {
-          finish(reject, new Error('無法開啟授權視窗，請再按一次「連接 Google Calendar」'))
-          return
-        }
-        finish(reject, new Error(message))
-      },
-    })
-
-    if (uxMode === 'redirect') {
-      markRedirectPreferred()
-    }
-
-    requestGoogleAccessToken(client, { prompt })
-  })
+  const prompt = getStoredToken() ? 'select_account' : 'consent'
+  window.location.assign(buildManualOAuthUrl(clientId, { prompt }))
 }
 
 export function hasPendingGoogleOAuth() {
@@ -436,20 +349,8 @@ export function hasPendingGoogleOAuth() {
 }
 
 export async function resumeGoogleCalendarAuth() {
-  const clientId = getGoogleClientId()
-  if (!clientId || isGoogleCalendarConnected() || !isOAuthRedirectReturn()) {
-    return null
-  }
-
-  const returnedToken = consumeOAuthReturn()
-  if (returnedToken) return returnedToken
-
-  await loadGoogleIdentityScript()
-
-  return connectWithTokenClient(clientId, {
-    uxMode: 'redirect',
-    prompt: '',
-  })
+  if (!isOAuthRedirectReturn()) return null
+  return consumeOAuthReturn()
 }
 
 export function consumeOAuthReturn() {
@@ -461,44 +362,15 @@ export function consumeOAuthReturn() {
   return returnedToken.accessToken
 }
 
-export async function connectGoogleCalendar(options = {}) {
+export async function connectGoogleCalendar() {
   const clientId = getGoogleClientId()
   if (!clientId) {
     throw new Error('未設定 VITE_GOOGLE_CLIENT_ID，無法連接 Google Calendar')
   }
 
-  await loadGoogleIdentityScript()
-
-  const uxMode = options.uxMode || (shouldPreferRedirectOAuth() ? 'redirect' : 'popup')
-  const prompt = options.prompt ?? (getStoredToken() ? '' : 'consent')
-
-  if (uxMode === 'redirect') {
-    markOAuthPending()
-    markRedirectPreferred()
-  }
-
-  try {
-    return await connectWithTokenClient(clientId, { uxMode, prompt })
-  } catch (error) {
-    if (uxMode === 'redirect') {
-      clearOAuthPending()
-    }
-
-    const shouldFallback = uxMode === 'popup'
-      && !options.retried
-      && (error?.code === 'POPUP_FALLBACK' || error?.message === 'POPUP_FALLBACK')
-
-    if (shouldFallback) {
-      markRedirectPreferred()
-      return connectGoogleCalendar({
-        uxMode: 'redirect',
-        prompt,
-        retried: true,
-      })
-    }
-
-    throw error
-  }
+  // Full-page OAuth redirect — works in Cursor preview where GIS popups fail.
+  startManualGoogleCalendarConnect()
+  return new Promise(() => {})
 }
 
 export async function fetchGoogleTodayEvents(accessToken) {

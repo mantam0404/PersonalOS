@@ -13,7 +13,6 @@ import {
   clearCalendarCache,
   readOAuthReturnError,
   clearOAuthReturnParams,
-  resumeGoogleCalendarAuth,
 } from '../../services/calendar'
 import { emitToast } from '../../context/ToastContext'
 
@@ -69,7 +68,7 @@ export function CalendarEvents() {
         setError('')
 
         try {
-          const token = consumeOAuthReturn() || await resumeGoogleCalendarAuth()
+          const token = consumeOAuthReturn()
           if (cancelled) return
           if (token || isGoogleCalendarConnected()) {
             setConnected(true)
