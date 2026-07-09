@@ -28,7 +28,7 @@ export function ToastProvider({ children }) {
                 ? 'bg-green-600/90 text-white'
                 : t.type === 'error'
                   ? 'bg-red-600/90 text-white'
-                  : 'bg-slate-800/95 text-slate-100'
+                  : 'bg-slate-200 dark:bg-slate-800/95 text-slate-900 dark:text-slate-100'
             }`}
           >
             {t.message}

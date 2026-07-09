@@ -15,7 +15,7 @@ const ProjectDetailView = lazy(() =>
 )
 
 function RouteFallback() {
-  return <div className="py-12 text-center text-sm text-slate-500">載入中…</div>
+  return <div className="py-12 text-center text-sm text-slate-600 dark:text-slate-400">載入中…</div>
 }
 
 const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'

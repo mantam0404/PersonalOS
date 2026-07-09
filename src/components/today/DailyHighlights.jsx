@@ -30,7 +30,7 @@ export function DailyHighlights() {
       <div className="flex items-center gap-2">
         <Star size={20} className="text-amber-400" fill="currentColor" />
         <h2 className="text-lg font-semibold">Top 3 每日重點</h2>
-        <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+        <span className="rounded-full bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-400">
           {highlights?.length ?? 0}/{MAX_DAILY_HIGHLIGHTS}
         </span>
       </div>
@@ -40,7 +40,7 @@ export function DailyHighlights() {
       )}
 
       {!highlights?.length ? (
-        <p className="rounded-xl border border-dashed border-slate-700 p-5 text-center text-sm text-slate-500">
+        <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-5 text-center text-sm text-slate-500">
           從下方待辦點擊 ⭐ 設為今日重點
         </p>
       ) : (

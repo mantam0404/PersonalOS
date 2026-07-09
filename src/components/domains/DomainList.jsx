@@ -41,7 +41,7 @@ export function DomainList() {
           <Layers size={20} className="text-blue-400" />
           <h2 className="text-lg font-semibold">領域 Domains</h2>
           {domains && (
-            <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-400">
+            <span className="rounded-full bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400">
               {domains.length}
             </span>
           )}
@@ -49,7 +49,7 @@ export function DomainList() {
         <button
           type="button"
           onClick={() => setIsAdding((v) => !v)}
-          className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-700 px-3 text-xs font-medium text-slate-300 hover:bg-slate-800"
+          className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800"
         >
           <Plus size={14} />
           新增領域
@@ -57,13 +57,13 @@ export function DomainList() {
       </div>
 
       {isAdding && (
-        <form onSubmit={handleAdd} className="space-y-3 rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <form onSubmit={handleAdd} className="space-y-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
           <input
             ref={inputRef}
             type="text"
             placeholder="領域名稱，如：工作、日文學習..."
             autoFocus
-            className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-slate-100 outline-none focus:border-blue-500"
+            className="min-h-10 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
           />
           <div className="flex gap-2">
             {PRESET_COLORS.map((color) => (
@@ -89,7 +89,7 @@ export function DomainList() {
       )}
 
       {!domains?.length ? (
-        <p className="rounded-xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-500">
+        <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-sm text-slate-500">
           載入中...
         </p>
       ) : (
@@ -97,7 +97,7 @@ export function DomainList() {
           {domains.map((domain) => (
             <li
               key={domain.id}
-              className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3"
+              className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3"
             >
               <span
                 className="h-4 w-4 shrink-0 rounded-full"
@@ -108,7 +108,7 @@ export function DomainList() {
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(domain.id)}
-                  className="flex-1 rounded-lg border border-slate-700 bg-slate-800 px-2 py-1 text-sm outline-none focus:border-blue-500"
+                  className="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-2 py-1 text-sm outline-none focus:border-blue-500"
                   autoFocus
                 />
               ) : (
@@ -119,7 +119,7 @@ export function DomainList() {
                   <button
                     type="button"
                     onClick={() => handleSaveEdit(domain.id)}
-                    className="rounded-lg px-2 py-1 text-xs text-blue-400 hover:bg-slate-800"
+                    className="rounded-lg px-2 py-1 text-xs text-blue-400 hover:bg-slate-200 dark:hover:bg-slate-800"
                   >
                     儲存
                   </button>
@@ -130,7 +130,7 @@ export function DomainList() {
                       setEditingId(domain.id)
                       setEditName(domain.name)
                     }}
-                    className="rounded-lg p-2 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+                    className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
                     aria-label="編輯"
                   >
                     <Pencil size={14} />
@@ -140,7 +140,7 @@ export function DomainList() {
                   <button
                     type="button"
                     onClick={() => handleDelete(domain.id)}
-                    className="rounded-lg p-2 text-slate-500 hover:bg-slate-800 hover:text-red-400"
+                    className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-red-400"
                     aria-label="刪除"
                   >
                     <Trash2 size={14} />

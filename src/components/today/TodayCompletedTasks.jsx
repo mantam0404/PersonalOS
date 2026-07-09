@@ -10,11 +10,11 @@ export function TodayCompletedTasks() {
   const recent = tasks.slice(0, 10)
 
   return (
-    <details className="rounded-xl border border-slate-800 bg-slate-900">
-      <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-slate-400">
+    <details className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
         已完成 ({tasks.length})
       </summary>
-      <ul className="space-y-1 border-t border-slate-800 px-4 py-3">
+      <ul className="space-y-1 border-t border-slate-200 dark:border-slate-800 px-4 py-3">
         {recent.map((task) => (
           <li key={task.id} className="flex items-center gap-2 text-sm">
             <CheckCircle2 size={16} className="shrink-0 text-green-500" />
@@ -22,7 +22,7 @@ export function TodayCompletedTasks() {
             <button
               type="button"
               onClick={() => reopenTask(task.id)}
-              className="flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-800 hover:text-blue-400"
+              className="flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-blue-400"
             >
               <RotateCcw size={12} />
               還原

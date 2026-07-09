@@ -14,16 +14,16 @@ export function Modal({ open, onClose, title, children }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="relative z-10 w-full max-w-md rounded-t-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl sm:rounded-2xl"
+        className="relative z-10 w-full max-w-md rounded-t-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xl sm:rounded-2xl"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 id="modal-title" className="text-lg font-semibold text-slate-100">
+          <h2 id="modal-title" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+            className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
             aria-label="關閉"
           >
             <X size={18} />

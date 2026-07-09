@@ -11,7 +11,7 @@ import {
 import { Modal } from './ui/Modal'
 
 const AI_STATUS_LABELS = {
-  pending: { label: '待處理', className: 'bg-slate-700 text-slate-400' },
+  pending: { label: '待處理', className: 'bg-slate-700 text-slate-600 dark:text-slate-400' },
   processing: { label: 'AI 處理中', className: 'bg-purple-500/15 text-purple-400' },
   done: { label: '待確認', className: 'bg-blue-500/15 text-blue-400' },
   error: { label: '處理失敗', className: 'bg-red-500/15 text-red-400' },
@@ -36,7 +36,7 @@ function AiBadge({ item }) {
         )}
       </span>
       {item.aiClassification && (
-        <span className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-400">
+        <span className="rounded bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 text-xs text-slate-600 dark:text-slate-400">
           {CLASS_LABELS[item.aiClassification] || item.aiClassification}
           {item.aiConfidence != null && ` ${Math.round(item.aiConfidence * 100)}%`}
         </span>
@@ -104,7 +104,7 @@ export function InboxList() {
         <Inbox size={20} className="text-blue-400" />
         <h2 className="text-lg font-semibold">收件匣</h2>
         {items && (
-          <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-400">
+          <span className="rounded-full bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400">
             {items.length}
           </span>
         )}
@@ -115,7 +115,7 @@ export function InboxList() {
       </p>
 
       {!items?.length ? (
-        <p className="rounded-xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-500">
+        <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-sm text-slate-500">
           收件匣是空的 — 輸入後 AI 會自動處理
         </p>
       ) : (
@@ -123,7 +123,7 @@ export function InboxList() {
           {items.map((item) => (
             <li
               key={item.id}
-              className="rounded-xl border border-slate-800 bg-slate-900 p-3"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3"
             >
               <div className="mb-2">
                 <AiBadge item={item} />
@@ -156,7 +156,7 @@ export function InboxList() {
                 <button
                   type="button"
                   onClick={() => handleArchive(item.id)}
-                  className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-700 px-3 text-xs font-medium text-slate-400 hover:bg-slate-800"
+                  className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
                 >
                   <Archive size={14} />
                   封存
@@ -174,7 +174,7 @@ export function InboxList() {
       >
         {converting && (
           <div className="space-y-4">
-            <p className="rounded-lg bg-slate-800 p-3 text-sm">
+            <p className="rounded-lg bg-slate-200 dark:bg-slate-800 p-3 text-sm">
               {converting.cleanedText || converting.text}
             </p>
 
@@ -186,7 +186,7 @@ export function InboxList() {
                   setDomainId(e.target.value)
                   setProjectId('')
                 }}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
               >
                 {domains?.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -203,7 +203,7 @@ export function InboxList() {
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
                   >
                     <option value={TASK_PRIORITY.HIGH}>高</option>
                     <option value={TASK_PRIORITY.MEDIUM}>中</option>
@@ -215,7 +215,7 @@ export function InboxList() {
                   <select
                     value={projectId}
                     onChange={(e) => setProjectId(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
                   >
                     <option value="">未分類</option>
                     {filteredProjects?.map((p) => (
@@ -232,7 +232,7 @@ export function InboxList() {
                 <select
                   value={studyType}
                   onChange={(e) => setStudyType(e.target.value)}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
                 >
                   <option value={STUDY_TYPE.NOTE}>筆記</option>
                   <option value={STUDY_TYPE.BOOK}>書籍</option>
