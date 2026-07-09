@@ -1,14 +1,14 @@
-import { Wifi, WifiOff, Download, Sun, Moon, Monitor } from 'lucide-react'
+import { Wifi, WifiOff, Download, Sun, Moon } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { usePWAStatus } from '../hooks/usePWAStatus'
 import { BackupMenu } from './ui/BackupMenu'
 
 export function Navbar() {
-  const { theme, resolvedTheme, cycleTheme } = useApp()
+  const { theme, cycleTheme } = useApp()
   const { isOnline, isInstallable, promptInstall } = usePWAStatus()
 
-  const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
-  const themeLabels = { light: '淺色', dark: '深色', system: '跟隨系統' }
+  const ThemeIcon = theme === 'light' ? Sun : Moon
+  const themeLabel = theme === 'light' ? '淺色' : '深色'
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md">
@@ -51,8 +51,8 @@ export function Navbar() {
             type="button"
             onClick={cycleTheme}
             className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
-            aria-label={`切換主題（目前：${themeLabels[theme]}，${resolvedTheme === 'dark' ? '深色' : '淺色'}顯示）`}
-            title={`主題：${themeLabels[theme]}`}
+            aria-label={`切換主題（目前：${themeLabel}）`}
+            title={`切換為${theme === 'light' ? '深色' : '淺色'}模式`}
           >
             <ThemeIcon size={18} />
           </button>
