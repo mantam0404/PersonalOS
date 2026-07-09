@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useProject, useProjectMilestones } from '../../hooks/useStudy'
@@ -8,6 +8,7 @@ import {
   addChecklistItem,
   toggleChecklistItem,
   deleteMilestone,
+  touchProject,
 } from '../../db'
 
 export function ProjectDetail({ projectId }) {
@@ -17,6 +18,10 @@ export function ProjectDetail({ projectId }) {
   const milestoneRef = useRef(null)
   const checklistRefs = useRef({})
   const [addingMilestone, setAddingMilestone] = useState(false)
+
+  useEffect(() => {
+    if (projectId) touchProject(projectId)
+  }, [projectId])
 
   if (project === undefined || milestones === undefined) return null
 

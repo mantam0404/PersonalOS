@@ -15,6 +15,7 @@ export * from './services/study'
 export * from './services/today'
 export * from './services/capture'
 export * from './services/milestones'
+export * from './services/backup'
 
 export async function completeTask(id) {
   const now = Date.now()
@@ -38,6 +39,10 @@ export async function assignTaskToProject(taskId, projectId) {
     projectId: projectId || null,
     lastTouchedAt: Date.now(),
   })
+}
+
+export async function touchProject(id) {
+  await db.projects.update(id, { lastTouchedAt: Date.now() })
 }
 
 export async function addProject(name, { description = '', domainId } = {}) {

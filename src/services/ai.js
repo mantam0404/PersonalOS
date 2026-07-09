@@ -17,6 +17,11 @@ export function removeFillers(text) {
     .trim()
 }
 
+export function isMeaningfulText(text) {
+  const cleaned = removeFillers(text)
+  return cleaned.length >= 2
+}
+
 export function classifyCapture(text) {
   let taskScore = 0
   let studyScore = 0
@@ -29,16 +34,20 @@ export function classifyCapture(text) {
   }
 
   if (taskScore === 0 && studyScore === 0) {
-    return { classification: 'task', confidence: 0.5 }
+    return { classification: 'ambiguous', confidence: 0.4 }
   }
 
-  if (taskScore >= studyScore) {
-    const confidence = Math.min(0.95, 0.6 + taskScore * 0.15)
-    return { classification: 'task', confidence }
+  if (taskScore > 0 && studyScore > 0) {
+    const dominant = taskScore >= studyScore ? 'task' : 'study'
+    const confidence = 0.55 + Math.min(taskScore, studyScore) * 0.05
+    return { classification: dominant, confidence: Math.min(confidence, 0.65) }
   }
 
-  const confidence = Math.min(0.95, 0.6 + studyScore * 0.15)
-  return { classification: 'study', confidence }
+  if (taskScore > 0) {
+    return { classification: 'task', confidence: Math.min(0.95, 0.65 + taskScore * 0.15) }
+  }
+
+  return { classification: 'study', confidence: Math.min(0.95, 0.65 + studyScore * 0.15) }
 }
 
 export async function processCapture(rawText) {
@@ -64,7 +73,7 @@ export async function processCapture(rawText) {
 
   return {
     cleanedText: cleanedText || rawText,
-    classification,
+    classification: classification === 'ambiguous' ? 'task' : classification,
     confidence,
     source: 'local',
   }
