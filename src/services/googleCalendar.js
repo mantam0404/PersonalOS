@@ -17,10 +17,10 @@ export function isGoogleCalendarConfigured() {
 
 export function getOAuthRedirectUri() {
   const configured = import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim()
-  if (configured) return configured
+  if (configured) return configured.replace(/\/$/, '')
 
-  // Always use app root — pathname changes (e.g. /capture) must not alter redirect_uri.
-  return `${window.location.origin}/`
+  // Google Console often rejects trailing slashes — use origin only, no path.
+  return window.location.origin.replace(/\/$/, '')
 }
 
 export function getOAuthRedirectUriHints() {
@@ -28,8 +28,6 @@ export function getOAuthRedirectUriHints() {
   const hints = new Set([primary])
   const port = window.location.port || '5173'
 
-  hints.add(`http://127.0.0.1:${port}/`)
-  hints.add(`http://localhost:${port}/`)
   hints.add(`http://127.0.0.1:${port}`)
   hints.add(`http://localhost:${port}`)
 
