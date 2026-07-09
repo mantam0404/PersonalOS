@@ -1,6 +1,7 @@
 import { Wifi, WifiOff, Download, Sun, Moon, Monitor } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { usePWAStatus } from '../hooks/usePWAStatus'
+import { BackupMenu } from './ui/BackupMenu'
 
 export function Navbar() {
   const { theme, cycleTheme } = useApp()
@@ -42,6 +43,8 @@ export function Navbar() {
               <span className="hidden sm:inline">安裝</span>
             </button>
           )}
+
+          <BackupMenu />
 
           <button
             type="button"

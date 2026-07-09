@@ -35,7 +35,9 @@ export function useStudyRelated(id) {
 
     const linkedIds = new Set()
     for (const link of links) {
-      linkedIds.add(link.sourceId === id ? link.targetId : link.sourceId)
+      if (link.type === 'derived' || link.targetType === 'task') continue
+      const otherId = link.sourceId === id ? link.targetId : link.sourceId
+      linkedIds.add(otherId)
     }
 
     const linked = await Promise.all([...linkedIds].map((lid) => db.studyItems.get(lid)))
@@ -71,7 +73,7 @@ export function useTaskByStudySource(studyId) {
     const links = await db.studyLinks
       .where('sourceId')
       .equals(studyId)
-      .filter((l) => l.type === 'derived')
+      .filter((l) => l.type === 'derived' && l.targetType !== 'study')
       .toArray()
     return Promise.all(links.map((l) => db.tasks.get(l.targetId)))
   }, [studyId])

@@ -4,6 +4,7 @@ import { TodayTaskList } from '../components/today/TodayTaskList'
 import { RoutineList } from '../components/today/RoutineList'
 import { SlippingSection } from '../components/today/SlippingSection'
 import { ResurfacingCard } from '../components/today/ResurfacingCard'
+import { TodayCompletedTasks } from '../components/today/TodayCompletedTasks'
 import { getTodayKey } from '../db/helpers'
 
 export function TodayView() {
@@ -23,6 +24,7 @@ export function TodayView() {
       <DailyHighlights />
       <RoutineList />
       <TodayTaskList />
+      <TodayCompletedTasks />
       <SlippingSection />
     </div>
   )
