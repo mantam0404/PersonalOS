@@ -6,7 +6,7 @@ import {
   consumeOAuthReturn,
   disconnectGoogleCalendar,
   fetchTodayEvents,
-  getOAuthRedirectUriHints,
+  getGoogleOAuthOriginHints,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
   isOAuthRedirectReturn,
@@ -22,8 +22,8 @@ export function CalendarEvents() {
   const [loading, setLoading] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState('')
-  const redirectUriHints = getOAuthRedirectUriHints()
-  const activeRedirectUri = redirectUriHints[0]
+  const originHints = getGoogleOAuthOriginHints()
+  const activeOrigin = originHints[0]
 
   const loadEvents = useCallback(async () => {
     if (!isGoogleCalendarConnected()) {
@@ -59,7 +59,7 @@ export function CalendarEvents() {
         clearCalendarCache()
         if (!cancelled) {
           const hint = /redirect_uri_mismatch/i.test(oauthReturnError)
-            ? '請確認 Google Cloud Console 的 Authorized redirect URIs 包含：' + activeRedirectUri
+            ? `此 OAuth Client 未設定 Redirect URI。請改用 GIS 彈窗模式，並在 Authorized JavaScript origins 加入：${activeOrigin}`
             : oauthReturnError
           setError(`Google 授權失敗：${hint}`)
           emitToast(`Google 授權失敗：${hint}`, 'error')
@@ -68,25 +68,11 @@ export function CalendarEvents() {
       }
 
       if (isOAuthRedirectReturn()) {
-        setConnecting(true)
-        setError('')
-
-        try {
-          const token = consumeOAuthReturn()
-          if (cancelled) return
-          if (token || isGoogleCalendarConnected()) {
-            setConnected(true)
-            emitToast('已連接 Google Calendar', 'success')
-            await loadEvents()
-          }
-        } catch (err) {
-          if (cancelled) return
-          abortPendingGoogleOAuth()
-          const message = err.message || '連接失敗'
-          setError(message)
-          emitToast(message, 'error')
-        } finally {
-          if (!cancelled) setConnecting(false)
+        const token = consumeOAuthReturn()
+        if (token && !cancelled) {
+          setConnected(true)
+          emitToast('已連接 Google Calendar', 'success')
+          await loadEvents()
         }
         return
       }
@@ -104,7 +90,7 @@ export function CalendarEvents() {
     return () => {
       cancelled = true
     }
-  }, [loadEvents])
+  }, [activeOrigin, loadEvents])
 
   const handleConnect = async () => {
     if (!isGoogleCalendarConfigured()) {
@@ -119,19 +105,15 @@ export function CalendarEvents() {
 
     try {
       await connectGoogleCalendar()
-      if (isGoogleCalendarConnected()) {
-        setConnected(true)
-        emitToast('已連接 Google Calendar', 'success')
-        await loadEvents()
-      }
+      setConnected(true)
+      emitToast('已連接 Google Calendar', 'success')
+      await loadEvents()
     } catch (err) {
       const message = err.message || '連接失敗'
       setError(message)
       emitToast(message, 'error')
     } finally {
-      if (!isGoogleCalendarConnected()) {
-        setConnecting(false)
-      }
+      setConnecting(false)
     }
   }
 
@@ -165,7 +147,7 @@ export function CalendarEvents() {
         </div>
         {connecting && (
           <p className="mt-2 text-xs text-slate-500">
-            正在導向 Google 授權頁面；完成後會自動回到此頁並載入今日行程。
+            將開啟 Google 授權視窗；若 Cursor 內建預覽無法彈窗，請用 Chrome 開啟此網址後再試。
           </p>
         )}
         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
@@ -177,14 +159,25 @@ export function CalendarEvents() {
           </p>
         )}
         {isGoogleCalendarConfigured() && (
-          <p className="mt-2 text-xs text-slate-500">
-            目前使用的 redirect URI：
-            <code className="mt-1 block rounded bg-cyan-500/10 px-1 text-cyan-700 dark:text-cyan-300">{activeRedirectUri}</code>
-            請在 Google Cloud Console 的 Authorized redirect URIs 加入以下任一（建議全部加入）：
-            {redirectUriHints.map((uri) => (
-              <code key={uri} className="mt-1 block rounded bg-slate-200 px-1 dark:bg-slate-800">{uri}</code>
+          <div className="mt-2 space-y-1 text-xs text-slate-500">
+            <p>
+              請在 Google Cloud Console 的
+              {' '}
+              <strong>Authorized JavaScript origins</strong>
+              {' '}
+              加入（不是 Redirect URIs）：
+            </p>
+            <code className="block rounded bg-cyan-500/10 px-1 text-cyan-700 dark:text-cyan-300">{activeOrigin}</code>
+            {originHints.slice(1).map((origin) => (
+              <code key={origin} className="block rounded bg-slate-200 px-1 dark:bg-slate-800">{origin}</code>
             ))}
-          </p>
+            <p className="pt-1">
+              並確認已啟用
+              {' '}
+              <strong>Google Calendar API</strong>
+              。
+            </p>
+          </div>
         )}
       </section>
     )

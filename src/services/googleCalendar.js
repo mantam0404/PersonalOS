@@ -15,44 +15,19 @@ export function isGoogleCalendarConfigured() {
   return Boolean(getGoogleClientId())
 }
 
-export function getOAuthRedirectUri() {
-  const configured = import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim()
-  if (configured) return configured.replace(/\/$/, '')
-
-  // Google Console often rejects trailing slashes — use origin only, no path.
-  return window.location.origin.replace(/\/$/, '')
-}
-
-export function getOAuthRedirectUriHints() {
-  const primary = getOAuthRedirectUri()
-  const hints = new Set([primary])
+export function getGoogleOAuthOriginHints() {
   const port = window.location.port || '5173'
-
-  hints.add(`http://127.0.0.1:${port}`)
-  hints.add(`http://localhost:${port}`)
-
-  return [...hints]
+  const origins = new Set([
+    window.location.origin.replace(/\/$/, ''),
+    `http://127.0.0.1:${port}`,
+    `http://localhost:${port}`,
+  ])
+  return [...origins]
 }
 
-function isLocalDevHost() {
-  const host = window.location.hostname
-  return host === 'localhost' || host === '127.0.0.1' || host === '[::1]'
-}
-
-export function shouldPreferRedirectOAuth() {
-  try {
-    if (sessionStorage.getItem(OAUTH_REDIRECT_KEY) === '1') return true
-    if (sessionStorage.getItem(OAUTH_PENDING_KEY) === '1') return true
-  } catch {
-    // ignore storage errors
-  }
-
-  if (isLocalDevHost()) return true
-
-  if (window.self !== window.top) return true
-
-  const ua = navigator.userAgent || ''
-  return /Electron|Cursor/i.test(ua)
+// Legacy name kept for UI imports.
+export function getOAuthRedirectUriHints() {
+  return getGoogleOAuthOriginHints()
 }
 
 export function readOAuthReturnError() {
@@ -90,6 +65,15 @@ export function hasOAuthReturnInUrl() {
 
 export function isOAuthRedirectReturn() {
   return Boolean(readOAuthReturnError() || readOAuthReturnToken())
+}
+
+export function consumeOAuthReturn() {
+  const returnedToken = readOAuthReturnToken()
+  if (!returnedToken) return null
+
+  storeToken(returnedToken.accessToken, returnedToken.expiresIn)
+  clearOAuthReturnParams()
+  return returnedToken.accessToken
 }
 
 export function clearOAuthReturnParams() {
@@ -315,52 +299,16 @@ export function loadGoogleIdentityScript() {
   return scriptLoadPromise
 }
 
-function buildManualOAuthUrl(clientId, { prompt = 'consent' } = {}) {
-  const params = new URLSearchParams({
+function buildTokenClient(clientId, { onSuccess, onError }) {
+  const client = window.google.accounts.oauth2.initTokenClient({
     client_id: clientId,
-    redirect_uri: getOAuthRedirectUri(),
-    response_type: 'token',
     scope: CALENDAR_SCOPE,
-    include_granted_scopes: 'true',
-    prompt,
+    callback: () => {},
+    error_callback: onError,
   })
 
-  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
-}
-
-export function startManualGoogleCalendarConnect() {
-  const clientId = getGoogleClientId()
-  if (!clientId) {
-    throw new Error('未設定 VITE_GOOGLE_CLIENT_ID，無法連接 Google Calendar')
-  }
-
-  markOAuthPending()
-  markRedirectPreferred()
-
-  const prompt = getStoredToken() ? 'select_account' : 'consent'
-  window.location.assign(buildManualOAuthUrl(clientId, { prompt }))
-}
-
-export function hasPendingGoogleOAuth() {
-  try {
-    return sessionStorage.getItem(OAUTH_PENDING_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-export async function resumeGoogleCalendarAuth() {
-  if (!isOAuthRedirectReturn()) return null
-  return consumeOAuthReturn()
-}
-
-export function consumeOAuthReturn() {
-  const returnedToken = readOAuthReturnToken()
-  if (!returnedToken) return null
-
-  storeToken(returnedToken.accessToken, returnedToken.expiresIn)
-  clearOAuthReturnParams()
-  return returnedToken.accessToken
+  client.callback = onSuccess
+  return client
 }
 
 export async function connectGoogleCalendar() {
@@ -369,9 +317,52 @@ export async function connectGoogleCalendar() {
     throw new Error('未設定 VITE_GOOGLE_CLIENT_ID，無法連接 Google Calendar')
   }
 
-  // Full-page OAuth redirect — works in Cursor preview where GIS popups fail.
-  startManualGoogleCalendarConnect()
-  return new Promise(() => {})
+  await loadGoogleIdentityScript()
+
+  return new Promise((resolve, reject) => {
+    let settled = false
+    const origin = window.location.origin.replace(/\/$/, '')
+
+    const finish = (handler, value) => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timeoutId)
+      handler(value)
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      finish(reject, new Error(`Google 授權逾時，請改用 Chrome 開啟 ${origin} 後再試`))
+    }, 120_000)
+
+    const client = buildTokenClient(clientId, {
+      onSuccess: (response) => {
+        if (response?.error) {
+          finish(reject, new Error(response.error_description || response.error))
+          return
+        }
+        if (!response?.access_token) {
+          finish(reject, new Error('未取得 Google 授權，請再試一次'))
+          return
+        }
+        storeToken(response.access_token, response.expires_in)
+        finish(resolve, response.access_token)
+      },
+      onError: (error) => {
+        if (error?.type === 'popup_failed_to_open' || error?.type === 'popup_closed') {
+          finish(
+            reject,
+            new Error(
+              `無法在此預覽視窗完成 Google 授權。請用 Chrome / Safari 開啟 ${origin}，再按「連接 Google Calendar」。`,
+            ),
+          )
+          return
+        }
+        finish(reject, new Error(error?.message || error?.type || 'Google OAuth 失敗'))
+      },
+    })
+
+    client.requestAccessToken({ prompt: getStoredToken() ? '' : 'consent' })
+  })
 }
 
 export async function fetchGoogleTodayEvents(accessToken) {

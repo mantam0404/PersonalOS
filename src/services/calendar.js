@@ -4,14 +4,13 @@ import {
   consumeOAuthReturn,
   disconnectGoogleCalendar,
   fetchGoogleTodayEvents,
+  getGoogleOAuthOriginHints,
   getOAuthRedirectUriHints,
-  hasPendingGoogleOAuth,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
   isOAuthRedirectReturn,
   readOAuthReturnError,
   clearOAuthReturnParams,
-  resumeGoogleCalendarAuth,
 } from './googleCalendar'
 
 const CACHE_KEY = 'personal-os-calendar-cache'
@@ -21,14 +20,13 @@ export {
   connectGoogleCalendar,
   consumeOAuthReturn,
   disconnectGoogleCalendar,
+  getGoogleOAuthOriginHints,
   getOAuthRedirectUriHints,
-  hasPendingGoogleOAuth,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
   isOAuthRedirectReturn,
   readOAuthReturnError,
   clearOAuthReturnParams,
-  resumeGoogleCalendarAuth,
 }
 
 export async function fetchTodayEvents() {
