@@ -1,6 +1,10 @@
 const TOKEN_STORAGE_KEY = 'personal-os-google-calendar-token'
+const OAUTH_PENDING_KEY = 'personal-os-google-oauth-pending'
+const OAUTH_REDIRECT_KEY = 'personal-os-google-use-redirect'
 const GOOGLE_SCRIPT_URL = 'https://accounts.google.com/gsi/client'
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly'
+const CONNECT_TIMEOUT_MS = 90_000
+const POPUP_CONNECT_TIMEOUT_MS = 20_000
 
 let scriptLoadPromise = null
 
@@ -10,6 +14,48 @@ export function getGoogleClientId() {
 
 export function isGoogleCalendarConfigured() {
   return Boolean(getGoogleClientId())
+}
+
+export function getOAuthRedirectUri() {
+  return `${window.location.origin}${window.location.pathname}`
+}
+
+export function shouldPreferRedirectOAuth() {
+  try {
+    if (sessionStorage.getItem(OAUTH_REDIRECT_KEY) === '1') return true
+    if (sessionStorage.getItem(OAUTH_PENDING_KEY) === '1') return true
+  } catch {
+    // ignore storage errors
+  }
+
+  if (window.self !== window.top) return true
+
+  const ua = navigator.userAgent || ''
+  return /Electron|Cursor/i.test(ua)
+}
+
+function clearOAuthPending() {
+  try {
+    sessionStorage.removeItem(OAUTH_PENDING_KEY)
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function markOAuthPending() {
+  try {
+    sessionStorage.setItem(OAUTH_PENDING_KEY, '1')
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function markRedirectPreferred() {
+  try {
+    sessionStorage.setItem(OAUTH_REDIRECT_KEY, '1')
+  } catch {
+    // ignore storage errors
+  }
 }
 
 export function getTodayTimeRange(date = new Date()) {
@@ -83,11 +129,14 @@ export function getStoredToken() {
 }
 
 function storeToken(accessToken, expiresInSeconds = 3600) {
-  const expiresAt = Date.now() + expiresInSeconds * 1000
+  if (!accessToken) return
+
+  const expiresAt = Date.now() + Number(expiresInSeconds || 3600) * 1000
   localStorage.setItem(
     TOKEN_STORAGE_KEY,
     JSON.stringify({ accessToken, expiresAt }),
   )
+  clearOAuthPending()
 }
 
 export function isGoogleCalendarConnected() {
@@ -100,6 +149,34 @@ export function disconnectGoogleCalendar() {
     window.google.accounts.oauth2.revoke(token, () => {})
   }
   localStorage.removeItem(TOKEN_STORAGE_KEY)
+  clearOAuthPending()
+}
+
+function waitForGoogleIdentityScript(script) {
+  return new Promise((resolve, reject) => {
+    const finish = () => {
+      if (window.google?.accounts?.oauth2) {
+        resolve()
+        return
+      }
+      reject(new Error('無法載入 Google 登入服務'))
+    }
+
+    if (window.google?.accounts?.oauth2) {
+      resolve()
+      return
+    }
+
+    if (script?.complete) {
+      window.setTimeout(finish, 0)
+      return
+    }
+
+    script?.addEventListener('load', finish, { once: true })
+    script?.addEventListener('error', () => reject(new Error('無法載入 Google 登入服務')), {
+      once: true,
+    })
+  })
 }
 
 export function loadGoogleIdentityScript() {
@@ -112,10 +189,7 @@ export function loadGoogleIdentityScript() {
   scriptLoadPromise = new Promise((resolve, reject) => {
     const existing = document.querySelector(`script[src="${GOOGLE_SCRIPT_URL}"]`)
     if (existing) {
-      existing.addEventListener('load', () => resolve(), { once: true })
-      existing.addEventListener('error', () => reject(new Error('無法載入 Google 登入服務')), {
-        once: true,
-      })
+      waitForGoogleIdentityScript(existing).then(resolve).catch(reject)
       return
     }
 
@@ -123,15 +197,132 @@ export function loadGoogleIdentityScript() {
     script.src = GOOGLE_SCRIPT_URL
     script.async = true
     script.defer = true
-    script.onload = () => resolve()
+    script.onload = () => {
+      if (window.google?.accounts?.oauth2) resolve()
+      else reject(new Error('無法載入 Google 登入服務'))
+    }
     script.onerror = () => reject(new Error('無法載入 Google 登入服務'))
     document.head.appendChild(script)
+  }).catch((error) => {
+    scriptLoadPromise = null
+    throw error
   })
 
   return scriptLoadPromise
 }
 
-export async function connectGoogleCalendar() {
+function createTokenClient(clientId, { uxMode = 'popup', onSuccess, onError }) {
+  const config = {
+    client_id: clientId,
+    scope: CALENDAR_SCOPE,
+    ux_mode: uxMode,
+    callback: () => {},
+    error_callback: (error) => {
+      onError(error)
+    },
+  }
+
+  if (uxMode === 'redirect') {
+    config.redirect_uri = getOAuthRedirectUri()
+  }
+
+  const client = window.google.accounts.oauth2.initTokenClient(config)
+
+  client.callback = (response) => {
+    if (response?.error) {
+      onError(new Error(response.error_description || response.error))
+      return
+    }
+
+    if (!response?.access_token) {
+      onError(new Error('未取得 Google 授權，請再試一次'))
+      return
+    }
+
+    storeToken(response.access_token, response.expires_in)
+    onSuccess(response.access_token)
+  }
+
+  return client
+}
+
+function requestGoogleAccessToken(client, { prompt = '' } = {}) {
+  client.requestAccessToken({
+    prompt,
+  })
+}
+
+function connectWithTokenClient(clientId, { uxMode = 'popup', prompt = '' } = {}) {
+  return new Promise((resolve, reject) => {
+    let settled = false
+    const timeoutMs = uxMode === 'popup' ? POPUP_CONNECT_TIMEOUT_MS : CONNECT_TIMEOUT_MS
+
+    const finish = (handler, value) => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timeoutId)
+      handler(value)
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      finish(reject, new Error(uxMode === 'popup'
+        ? '授權視窗沒有回應，將改用重新導向模式'
+        : '連接逾時，請再試一次'))
+    }, timeoutMs)
+
+    const client = createTokenClient(clientId, {
+      uxMode,
+      onSuccess: (token) => finish(resolve, token),
+      onError: (error) => {
+        const message = error?.message || error?.type || 'Google OAuth 失敗'
+
+        if (error?.type === 'popup_closed') {
+          finish(reject, new Error('已取消 Google 授權'))
+          return
+        }
+
+        if (error?.type === 'popup_failed_to_open') {
+          markRedirectPreferred()
+          finish(reject, new Error('無法開啟授權視窗，請再試一次（將改用重新導向模式）'))
+          return
+        }
+
+        finish(reject, new Error(message))
+      },
+    })
+
+    if (uxMode === 'redirect') {
+      markOAuthPending()
+      markRedirectPreferred()
+    }
+
+    requestGoogleAccessToken(client, { prompt })
+  })
+}
+
+export function hasPendingGoogleOAuth() {
+  try {
+    return sessionStorage.getItem(OAUTH_PENDING_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export async function resumeGoogleCalendarAuth() {
+  const clientId = getGoogleClientId()
+  if (!clientId || isGoogleCalendarConnected() || !hasPendingGoogleOAuth()) {
+    return null
+  }
+
+  await loadGoogleIdentityScript()
+
+  return connectWithTokenClient(clientId, {
+    uxMode: 'redirect',
+    prompt: '',
+  })
+}
+
+export async function connectGoogleCalendar(options = {}) {
   const clientId = getGoogleClientId()
   if (!clientId) {
     throw new Error('未設定 VITE_GOOGLE_CLIENT_ID，無法連接 Google Calendar')
@@ -139,23 +330,23 @@ export async function connectGoogleCalendar() {
 
   await loadGoogleIdentityScript()
 
-  return new Promise((resolve, reject) => {
-    const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
-      scope: CALENDAR_SCOPE,
-      callback: (response) => {
-        if (response.error) {
-          reject(new Error(response.error_description || response.error))
-          return
-        }
+  const uxMode = options.uxMode || (shouldPreferRedirectOAuth() ? 'redirect' : 'popup')
+  const prompt = options.prompt ?? (getStoredToken() ? '' : 'consent')
 
-        storeToken(response.access_token, response.expires_in)
-        resolve(response.access_token)
-      },
-    })
+  try {
+    return await connectWithTokenClient(clientId, { uxMode, prompt })
+  } catch (error) {
+    if (uxMode === 'popup' && !options.retried) {
+      markRedirectPreferred()
+      return connectGoogleCalendar({
+        uxMode: 'redirect',
+        prompt,
+        retried: true,
+      })
+    }
 
-    client.requestAccessToken({ prompt: getStoredToken() ? '' : 'consent' })
-  })
+    throw error
+  }
 }
 
 export async function fetchGoogleTodayEvents(accessToken) {

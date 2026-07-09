@@ -2,8 +2,10 @@ import {
   connectGoogleCalendar,
   disconnectGoogleCalendar,
   fetchGoogleTodayEvents,
+  hasPendingGoogleOAuth,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
+  resumeGoogleCalendarAuth,
 } from './googleCalendar'
 
 const CACHE_KEY = 'personal-os-calendar-cache'
@@ -11,8 +13,10 @@ const CACHE_KEY = 'personal-os-calendar-cache'
 export {
   connectGoogleCalendar,
   disconnectGoogleCalendar,
+  hasPendingGoogleOAuth,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
+  resumeGoogleCalendarAuth,
 }
 
 export async function fetchTodayEvents() {

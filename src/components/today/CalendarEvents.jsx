@@ -4,9 +4,11 @@ import {
   connectGoogleCalendar,
   disconnectGoogleCalendar,
   fetchTodayEvents,
+  hasPendingGoogleOAuth,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
   clearCalendarCache,
+  resumeGoogleCalendarAuth,
 } from '../../services/calendar'
 import { emitToast } from '../../context/ToastContext'
 
@@ -41,8 +43,40 @@ export function CalendarEvents() {
   }, [])
 
   useEffect(() => {
-    if (isGoogleCalendarConnected()) {
-      loadEvents()
+    let cancelled = false
+
+    async function bootstrapConnection() {
+      if (isGoogleCalendarConnected()) {
+        setConnected(true)
+        await loadEvents()
+        return
+      }
+
+      if (!hasPendingGoogleOAuth()) return
+
+      setConnecting(true)
+      setError('')
+
+      try {
+        await resumeGoogleCalendarAuth()
+        if (cancelled) return
+        setConnected(true)
+        emitToast('已連接 Google Calendar', 'success')
+        await loadEvents()
+      } catch (err) {
+        if (cancelled) return
+        const message = err.message || '連接失敗'
+        setError(message)
+        emitToast(message, 'error')
+      } finally {
+        if (!cancelled) setConnecting(false)
+      }
+    }
+
+    bootstrapConnection()
+
+    return () => {
+      cancelled = true
     }
   }, [loadEvents])
 
@@ -104,6 +138,13 @@ export function CalendarEvents() {
             需在 Google Cloud Console 建立 OAuth Client ID，並設定環境變數
             {' '}
             <code className="rounded bg-slate-200 px-1 dark:bg-slate-800">VITE_GOOGLE_CLIENT_ID</code>
+          </p>
+        )}
+        {isGoogleCalendarConfigured() && (
+          <p className="mt-2 text-xs text-slate-500">
+            若使用重新導向模式，請在 Google Cloud Console 的 Authorized redirect URIs 加入
+            {' '}
+            <code className="rounded bg-slate-200 px-1 dark:bg-slate-800">{window.location.origin}{window.location.pathname}</code>
           </p>
         )}
       </section>
