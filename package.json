@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:gh-pages": "BASE_PATH=/PersonalOS/ vite build",
     "lint": "oxlint",
+    "test:calendar": "node scripts/test-calendar.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
