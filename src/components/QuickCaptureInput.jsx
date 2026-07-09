@@ -1,10 +1,11 @@
 import { useRef, useCallback, useState } from 'react'
-import { Send, Mic, MicOff, Loader2 } from 'lucide-react'
+import { Send, Mic, Loader2 } from 'lucide-react'
 import { addInboxItem, CAPTURE_TYPE } from '../db'
 import { isSpeechRecognitionSupported, startVoiceCapture } from '../services/voice'
 
 export function QuickCaptureInput({ inline = false }) {
   const inputRef = useRef(null)
+  const recognitionRef = useRef(null)
   const [isListening, setIsListening] = useState(false)
   const [voiceError, setVoiceError] = useState('')
 
@@ -19,7 +20,12 @@ export function QuickCaptureInput({ inline = false }) {
   }, [])
 
   const handleVoice = useCallback(() => {
-    if (isListening) return
+    if (isListening) {
+      recognitionRef.current?.stop?.()
+      recognitionRef.current = null
+      setIsListening(false)
+      return
+    }
     setVoiceError('')
 
     if (!isSpeechRecognitionSupported()) {
@@ -28,17 +34,27 @@ export function QuickCaptureInput({ inline = false }) {
     }
 
     setIsListening(true)
-    startVoiceCapture({
+    const recognition = startVoiceCapture({
       onResult: async (transcript) => {
+        if (inputRef.current) {
+          inputRef.current.value = transcript
+        }
         await addInboxItem(transcript, CAPTURE_TYPE.VOICE)
       },
       onError: (err) => {
         setVoiceError(err.message)
+        setIsListening(false)
       },
       onEnd: () => {
         setIsListening(false)
+        recognitionRef.current = null
       },
     })
+    if (!recognition) {
+      setIsListening(false)
+      return
+    }
+    recognitionRef.current = recognition
   }, [isListening])
 
   const formClass = inline
