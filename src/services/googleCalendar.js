@@ -16,7 +16,24 @@ export function isGoogleCalendarConfigured() {
 }
 
 export function getOAuthRedirectUri() {
-  return `${window.location.origin}${window.location.pathname}`
+  const configured = import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim()
+  if (configured) return configured
+
+  // Always use app root — pathname changes (e.g. /capture) must not alter redirect_uri.
+  return `${window.location.origin}/`
+}
+
+export function getOAuthRedirectUriHints() {
+  const primary = getOAuthRedirectUri()
+  const hints = new Set([primary])
+  const port = window.location.port || '5173'
+
+  hints.add(`http://127.0.0.1:${port}/`)
+  hints.add(`http://localhost:${port}/`)
+  hints.add(`http://127.0.0.1:${port}`)
+  hints.add(`http://localhost:${port}`)
+
+  return [...hints]
 }
 
 function isLocalDevHost() {
@@ -32,26 +49,12 @@ export function shouldPreferRedirectOAuth() {
     // ignore storage errors
   }
 
-  // Popups are blocked in Cursor / embedded previews and many local dev setups.
   if (isLocalDevHost()) return true
 
   if (window.self !== window.top) return true
 
   const ua = navigator.userAgent || ''
   return /Electron|Cursor/i.test(ua)
-}
-
-export function getOAuthRedirectUriHints() {
-  const current = getOAuthRedirectUri()
-  const hints = new Set([current])
-
-  if (window.location.hostname === '127.0.0.1') {
-    hints.add(`http://localhost:${window.location.port}${window.location.pathname}`)
-  } else if (window.location.hostname === 'localhost') {
-    hints.add(`http://127.0.0.1:${window.location.port}${window.location.pathname}`)
-  }
-
-  return [...hints]
 }
 
 export function readOAuthReturnError() {

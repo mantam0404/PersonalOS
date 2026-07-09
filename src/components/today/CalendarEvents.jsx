@@ -23,6 +23,7 @@ export function CalendarEvents() {
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState('')
   const redirectUriHints = getOAuthRedirectUriHints()
+  const activeRedirectUri = redirectUriHints[0]
 
   const loadEvents = useCallback(async () => {
     if (!isGoogleCalendarConnected()) {
@@ -57,8 +58,11 @@ export function CalendarEvents() {
         abortPendingGoogleOAuth()
         clearCalendarCache()
         if (!cancelled) {
-          setError(`Google 授權失敗：${oauthReturnError}`)
-          emitToast(`Google 授權失敗：${oauthReturnError}`, 'error')
+          const hint = /redirect_uri_mismatch/i.test(oauthReturnError)
+            ? '請確認 Google Cloud Console 的 Authorized redirect URIs 包含：' + activeRedirectUri
+            : oauthReturnError
+          setError(`Google 授權失敗：${hint}`)
+          emitToast(`Google 授權失敗：${hint}`, 'error')
         }
         return
       }
@@ -174,7 +178,9 @@ export function CalendarEvents() {
         )}
         {isGoogleCalendarConfigured() && (
           <p className="mt-2 text-xs text-slate-500">
-            請在 Google Cloud Console 的 Authorized redirect URIs 加入：
+            目前使用的 redirect URI：
+            <code className="mt-1 block rounded bg-cyan-500/10 px-1 text-cyan-700 dark:text-cyan-300">{activeRedirectUri}</code>
+            請在 Google Cloud Console 的 Authorized redirect URIs 加入以下任一（建議全部加入）：
             {redirectUriHints.map((uri) => (
               <code key={uri} className="mt-1 block rounded bg-slate-200 px-1 dark:bg-slate-800">{uri}</code>
             ))}
