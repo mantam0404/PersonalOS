@@ -1,6 +1,5 @@
 const TOKEN_STORAGE_KEY = 'personal-os-google-calendar-token'
 const OAUTH_PENDING_KEY = 'personal-os-google-oauth-pending'
-const OAUTH_REDIRECT_KEY = 'personal-os-google-use-redirect'
 const OAUTH_STARTED_AT_KEY = 'personal-os-google-oauth-started-at'
 const GOOGLE_SCRIPT_URL = 'https://accounts.google.com/gsi/client'
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly'
@@ -125,25 +124,8 @@ function clearOAuthPending() {
   }
 }
 
-function markOAuthPending() {
-  try {
-    sessionStorage.setItem(OAUTH_PENDING_KEY, '1')
-    sessionStorage.setItem(OAUTH_STARTED_AT_KEY, String(Date.now()))
-  } catch {
-    // ignore storage errors
-  }
-}
-
 export function abortPendingGoogleOAuth() {
   clearOAuthPending()
-}
-
-function markRedirectPreferred() {
-  try {
-    sessionStorage.setItem(OAUTH_REDIRECT_KEY, '1')
-  } catch {
-    // ignore storage errors
-  }
 }
 
 export function getTodayTimeRange(date = new Date()) {
@@ -321,7 +303,6 @@ export async function connectGoogleCalendar() {
 
   return new Promise((resolve, reject) => {
     let settled = false
-    const origin = window.location.origin.replace(/\/$/, '')
 
     const finish = (handler, value) => {
       if (settled) return
