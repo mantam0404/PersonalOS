@@ -11,7 +11,7 @@ export function CalendarEvents() {
 
   if (!events.length) {
     return (
-      <section className="rounded-xl border border-dashed border-slate-700 bg-slate-900/50 p-4">
+      <section className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900/50 p-4">
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <Calendar size={16} />
           <span>今日行程 — 連接 Google Calendar 後顯示</span>
@@ -30,7 +30,7 @@ export function CalendarEvents() {
         {events.map((ev) => (
           <li
             key={ev.id}
-            className="flex items-center justify-between rounded-lg bg-slate-900 px-3 py-2 text-sm"
+            className="flex items-center justify-between rounded-lg bg-white dark:bg-slate-900 px-3 py-2 text-sm"
           >
             <span>{ev.title}</span>
             <span className="text-xs text-slate-500">{ev.time}</span>

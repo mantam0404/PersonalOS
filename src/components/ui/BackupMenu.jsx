@@ -46,7 +46,7 @@ export function BackupMenu() {
         <button
           type="button"
           onClick={handleExport}
-          className="rounded-lg p-2 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
           aria-label="匯出備份"
           title="匯出備份"
         >
@@ -55,7 +55,7 @@ export function BackupMenu() {
         <button
           type="button"
           onClick={handleImportClick}
-          className="rounded-lg p-2 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
           aria-label="匯入備份"
           title="匯入備份"
         >
@@ -65,10 +65,10 @@ export function BackupMenu() {
 
       <Modal open={importOpen} onClose={() => setImportOpen(false)} title="匯入備份">
         <div className="space-y-4">
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             選擇之前匯出的 JSON 備份檔案。合併模式會保留現有資料並覆寫相同 ID 的項目。
           </p>
-          <label className="flex items-center gap-2 text-sm text-slate-300">
+          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
             <input
               type="checkbox"
               checked={replaceMode}
@@ -83,7 +83,7 @@ export function BackupMenu() {
             accept=".json,application/json"
             onChange={handleFile}
             disabled={busy}
-            className="w-full text-sm text-slate-400"
+            className="w-full text-sm text-slate-600 dark:text-slate-400"
           />
         </div>
       </Modal>

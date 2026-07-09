@@ -93,33 +93,33 @@ export function StudyDetail({ id }) {
 
   return (
     <div className="space-y-6">
-      <Link to="/study" className="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-slate-200">
+      <Link to="/study" className="inline-flex items-center gap-1 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200">
         <ArrowLeft size={16} />
         返回學習庫
       </Link>
 
       {editing && editForm ? (
-        <form onSubmit={handleSaveEdit} className="space-y-3 rounded-xl border border-slate-700 bg-slate-900 p-4">
+        <form onSubmit={handleSaveEdit} className="space-y-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
           <input
             type="text"
             value={editForm.title}
             onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
             placeholder="標題..."
             autoFocus
-            className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-slate-100 outline-none focus:border-green-500"
+            className="min-h-10 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-green-500"
           />
           <textarea
             value={editForm.content}
             onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
             placeholder="Markdown 內容..."
             rows={8}
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 outline-none focus:border-green-500"
+            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-green-500"
           />
           <div className="grid grid-cols-2 gap-2">
             <select
               value={editForm.type}
               onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
-              className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
             >
               <option value={STUDY_TYPE.NOTE}>筆記</option>
               <option value={STUDY_TYPE.BOOK}>書籍</option>
@@ -130,7 +130,7 @@ export function StudyDetail({ id }) {
             <select
               value={editForm.status}
               onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-              className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
             >
               <option value={STUDY_STATUS.READING}>閱讀中</option>
               <option value={STUDY_STATUS.COMPLETED}>已完成</option>
@@ -140,7 +140,7 @@ export function StudyDetail({ id }) {
           <select
             value={editForm.domainId}
             onChange={(e) => setEditForm({ ...editForm, domainId: e.target.value })}
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
           >
             {domains?.map((d) => (
               <option key={d.id} value={d.id}>{d.name}</option>
@@ -150,7 +150,7 @@ export function StudyDetail({ id }) {
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-slate-700 py-2.5 text-sm text-slate-400 hover:bg-slate-800"
+              className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 py-2.5 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
             >
               <X size={16} />
               取消
@@ -189,7 +189,7 @@ export function StudyDetail({ id }) {
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="flex items-center gap-1 rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-400 hover:bg-slate-800"
+              className="flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
             >
               <Pencil size={14} />
               編輯
@@ -200,7 +200,7 @@ export function StudyDetail({ id }) {
               className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs ${
                 item.isHighlight
                   ? 'bg-amber-500/15 text-amber-400'
-                  : 'border border-slate-700 text-slate-400 hover:bg-slate-800'
+                  : 'border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
               }`}
             >
               <Star size={14} fill={item.isHighlight ? 'currentColor' : 'none'} />
@@ -209,7 +209,7 @@ export function StudyDetail({ id }) {
             <select
               value={item.status}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs text-slate-100"
+              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100"
             >
               <option value={STUDY_STATUS.READING}>閱讀中</option>
               <option value={STUDY_STATUS.COMPLETED}>已完成</option>
@@ -227,7 +227,7 @@ export function StudyDetail({ id }) {
             <button
               type="button"
               onClick={handleDelete}
-              className="flex items-center gap-1 rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-red-400 hover:bg-slate-800"
+              className="flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs text-red-400 hover:bg-slate-200 dark:hover:bg-slate-800"
             >
               <Trash2 size={14} />
               刪除
@@ -243,7 +243,7 @@ export function StudyDetail({ id }) {
           <article
             onMouseUp={handleSelection}
             onTouchEnd={handleSelection}
-            className="prose prose-invert prose-sm max-w-none rounded-xl border border-slate-800 bg-slate-900 p-4"
+            className="prose prose-sm max-w-none rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 dark:prose-invert"
           >
             <Markdown>{item.content || '_（無內容）_'}</Markdown>
           </article>
@@ -252,10 +252,10 @@ export function StudyDetail({ id }) {
 
       {derivedTasks?.length > 0 && (
         <section className="space-y-2">
-          <h3 className="text-sm font-medium text-slate-400">由此筆記衍生的待辦</h3>
+          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">由此筆記衍生的待辦</h3>
           <ul className="space-y-1">
             {derivedTasks.filter(Boolean).map((task) => (
-              <li key={task.id} className="rounded-lg bg-slate-900 px-3 py-2 text-sm">
+              <li key={task.id} className="rounded-lg bg-white dark:bg-slate-900 px-3 py-2 text-sm">
                 {task.title}
                 <span className={`ml-2 text-xs ${task.status === 'done' ? 'text-green-400' : 'text-slate-500'}`}>
                   {task.status === 'done' ? '已完成' : '待辦'}
@@ -268,7 +268,7 @@ export function StudyDetail({ id }) {
 
       {related?.length > 0 && (
         <section className="space-y-2">
-          <h3 className="flex items-center gap-1 text-sm font-medium text-slate-400">
+          <h3 className="flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-400">
             <Link2 size={14} />
             關聯筆記
           </h3>
@@ -277,7 +277,7 @@ export function StudyDetail({ id }) {
               <li key={r.id}>
                 <Link
                   to={`/study/${r.id}`}
-                  className="block rounded-lg bg-slate-900 px-3 py-2 text-sm hover:bg-slate-800"
+                  className="block rounded-lg bg-white dark:bg-slate-900 px-3 py-2 text-sm hover:bg-slate-200 dark:hover:bg-slate-800"
                 >
                   {r.title}
                 </Link>

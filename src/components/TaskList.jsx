@@ -71,7 +71,7 @@ export function TaskList() {
               <button
                 type="button"
                 onClick={() => handleComplete(task.id)}
-                className="mt-0.5 shrink-0 text-slate-400 hover:text-green-500"
+                className="mt-0.5 shrink-0 text-slate-600 dark:text-slate-400 hover:text-green-500"
                 aria-label="標記完成"
               >
                 <Circle size={20} />

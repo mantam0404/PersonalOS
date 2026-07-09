@@ -7,6 +7,15 @@
     <meta name="theme-color" content="#0f172a" />
     <meta name="description" content="Action-Oriented Personal OS — 第二大腦與行動流水線" />
     <title>Personal OS</title>
+    <script>
+      (function () {
+        var theme = localStorage.getItem('personal-os-theme') || 'dark'
+        var isDark =
+          theme === 'dark' ||
+          (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        if (isDark) document.documentElement.classList.add('dark')
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

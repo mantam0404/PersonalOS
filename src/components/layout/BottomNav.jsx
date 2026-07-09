@@ -11,7 +11,7 @@ const tabs = [
 export function BottomNav() {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-800 bg-slate-950/95 backdrop-blur-md"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md"
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
     >
       <div className="mx-auto flex max-w-3xl">
@@ -24,7 +24,7 @@ export function BottomNav() {
               `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-xs transition-colors ${
                 isActive
                   ? 'text-blue-400'
-                  : 'text-slate-500 hover:text-slate-300'
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`
             }
           >

@@ -4,12 +4,55 @@
 
 html {
   -webkit-tap-highlight-color: transparent;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
-  @apply bg-slate-950 text-slate-100 antialiased;
+  @apply bg-slate-50 text-slate-900 antialiased;
 }
 
-html:not(.dark) body {
-  @apply bg-slate-50 text-slate-900;
+html.dark body {
+  @apply bg-slate-950 text-slate-100;
+}
+
+@layer components {
+  .surface-page {
+    @apply min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  }
+
+  .surface-bar {
+    @apply border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95;
+  }
+
+  .surface-card {
+    @apply rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900;
+  }
+
+  .surface-card-dashed {
+    @apply rounded-xl border border-dashed border-slate-300 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/50;
+  }
+
+  .surface-input {
+    @apply rounded-lg border border-slate-300 bg-slate-100 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100;
+  }
+
+  .surface-muted {
+    @apply bg-slate-200 dark:bg-slate-800;
+  }
+
+  .surface-hover {
+    @apply hover:bg-slate-200 dark:hover:bg-slate-800;
+  }
+
+  .text-muted {
+    @apply text-slate-600 dark:text-slate-400;
+  }
+
+  .text-heading {
+    @apply text-slate-900 dark:text-slate-100;
+  }
 }

@@ -14,7 +14,7 @@ export function TodayView() {
     <div className="space-y-8">
       <header>
         <h1 className="text-2xl font-bold">今日</h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           {today} · 聚焦今天最重要的事
         </p>
       </header>

@@ -38,7 +38,7 @@ export function SlippingSection() {
           >
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-400">
+                <span className="rounded bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 text-xs text-slate-600 dark:text-slate-400">
                   {TYPE_LABELS[item.type]}
                 </span>
                 <p className="text-sm">{item.title}</p>

@@ -20,7 +20,7 @@ export function StudyView() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold">學習</h1>
-        <p className="text-sm text-slate-400">知識庫與筆記管理 — 支援 Markdown 與 #標籤</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">知識庫與筆記管理 — 支援 Markdown 與 #標籤</p>
       </header>
 
       <StudyEditor onCreated={() => setRefreshKey((k) => k + 1)} />
@@ -34,7 +34,7 @@ export function StudyView() {
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
               filter === f.id
                 ? 'bg-green-600 text-white'
-                : 'border border-slate-700 text-slate-400 hover:bg-slate-800'
+                : 'border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
             }`}
           >
             {f.label}
