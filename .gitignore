@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.local
 
 # Deploy artifacts (must not live on main)
 /assets/
