@@ -1,7 +1,8 @@
 import { useRef, useCallback, useState, useEffect } from 'react'
-import { Search, Send, Mic, Loader2, Command } from 'lucide-react'
+import { Search, Send, Mic, Loader2 } from 'lucide-react'
 import { addInboxItem, CAPTURE_TYPE } from '../../db'
 import { isSpeechRecognitionSupported, startVoiceCapture } from '../../services/voice'
+import { ModKShortcut } from '../ui/ModKShortcut'
 
 export function BentoCapture() {
   const inputRef = useRef(null)
@@ -100,10 +101,7 @@ export function BentoCapture() {
             onFocus={() => setIsModalOpen(false)}
           />
           <div className="flex shrink-0 items-center gap-1.5">
-            <kbd className="hidden items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[10px] text-meta sm:inline-flex">
-              <Command size={10} />
-              K
-            </kbd>
+            <ModKShortcut className="hidden sm:inline-flex" />
             <button
               type="button"
               onClick={() => handleVoice(inputRef.current)}
@@ -177,10 +175,7 @@ export function BentoCapture() {
             </form>
             <div className="flex items-center justify-between px-4 py-2.5 text-xs text-meta">
               <span>Enter 送出 · Esc 關閉</span>
-              <kbd className="inline-flex items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 font-mono">
-                <Command size={10} />
-                K
-              </kbd>
+              <ModKShortcut />
             </div>
           </div>
         </div>
