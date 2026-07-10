@@ -6,7 +6,7 @@ export function Modal({ open, onClose, title, children }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-bg/80 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -14,16 +14,16 @@ export function Modal({ open, onClose, title, children }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="relative z-10 w-full max-w-md rounded-t-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xl sm:rounded-2xl"
+        className="bento-card relative z-10 w-full max-w-md rounded-t-2xl p-6 shadow-raised sm:rounded-2xl"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 id="modal-title" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+          <h2 id="modal-title" className="text-lg font-semibold text-fg">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
+            className="rounded-md p-2 text-muted transition-colors hover:bg-surface-elevated hover:text-fg"
             aria-label="關閉"
           >
             <X size={18} />

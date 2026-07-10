@@ -13,6 +13,9 @@ import {
   STUDY_TYPE,
 } from '../../db'
 
+const inputClass = 'input-field min-h-10 w-full px-3 text-sm'
+const selectClass = 'select-field w-full px-3 py-2 text-sm'
+
 export function StudyDetail({ id }) {
   const navigate = useNavigate()
   const item = useStudyItem(id)
@@ -43,9 +46,9 @@ export function StudyDetail({ id }) {
   if (item === undefined) return null
   if (!item) {
     return (
-      <div className="text-center text-slate-500">
+      <div className="text-center text-muted">
         <p>筆記不存在</p>
-        <Link to="/study" className="mt-2 text-blue-400">返回學習庫</Link>
+        <Link to="/study" className="mt-2 text-accent">返回學習庫</Link>
       </div>
     )
   }
@@ -93,33 +96,33 @@ export function StudyDetail({ id }) {
 
   return (
     <div className="space-y-6">
-      <Link to="/study" className="inline-flex items-center gap-1 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200">
+      <Link to="/study" className="inline-flex items-center gap-1 text-sm text-muted transition-colors hover:text-fg">
         <ArrowLeft size={16} />
         返回學習庫
       </Link>
 
       {editing && editForm ? (
-        <form onSubmit={handleSaveEdit} className="space-y-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
+        <form onSubmit={handleSaveEdit} className="bento-card space-y-3 p-4">
           <input
             type="text"
             value={editForm.title}
             onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
             placeholder="標題..."
             autoFocus
-            className="min-h-10 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-green-500"
+            className={inputClass}
           />
           <textarea
             value={editForm.content}
             onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
             placeholder="Markdown 內容..."
             rows={8}
-            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-green-500"
+            className={`${inputClass} py-2`}
           />
           <div className="grid grid-cols-2 gap-2">
             <select
               value={editForm.type}
               onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+              className={selectClass}
             >
               <option value={STUDY_TYPE.NOTE}>筆記</option>
               <option value={STUDY_TYPE.BOOK}>書籍</option>
@@ -130,7 +133,7 @@ export function StudyDetail({ id }) {
             <select
               value={editForm.status}
               onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+              className={selectClass}
             >
               <option value={STUDY_STATUS.READING}>閱讀中</option>
               <option value={STUDY_STATUS.COMPLETED}>已完成</option>
@@ -140,7 +143,7 @@ export function StudyDetail({ id }) {
           <select
             value={editForm.domainId}
             onChange={(e) => setEditForm({ ...editForm, domainId: e.target.value })}
-            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+            className={selectClass}
           >
             {domains?.map((d) => (
               <option key={d.id} value={d.id}>{d.name}</option>
@@ -150,14 +153,14 @@ export function StudyDetail({ id }) {
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 py-2.5 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+              className="btn-ghost flex flex-1 items-center justify-center gap-1 py-2.5 text-sm"
             >
               <X size={16} />
               取消
             </button>
             <button
               type="submit"
-              className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-green-600 py-2.5 text-sm font-medium text-white hover:bg-green-700"
+              className="flex flex-1 items-center justify-center gap-1 rounded-md bg-success py-2.5 text-sm font-medium text-white hover:opacity-90"
             >
               <Check size={16} />
               儲存
@@ -167,7 +170,7 @@ export function StudyDetail({ id }) {
       ) : (
         <>
           <header>
-            <h1 className="text-xl font-bold">{item.title}</h1>
+            <h1 className="text-xl font-semibold text-fg">{item.title}</h1>
             <div className="mt-2 flex flex-wrap gap-2">
               {domain && (
                 <span
@@ -178,7 +181,7 @@ export function StudyDetail({ id }) {
                 </span>
               )}
               {item.tags?.map((tag) => (
-                <span key={tag} className="rounded bg-purple-500/10 px-2 py-0.5 text-xs text-purple-400">
+                <span key={tag} className="rounded bg-accent/10 px-2 py-0.5 text-xs text-accent">
                   #{tag}
                 </span>
               ))}
@@ -189,7 +192,7 @@ export function StudyDetail({ id }) {
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+              className="btn-ghost flex items-center gap-1 px-3 py-1.5 text-xs"
             >
               <Pencil size={14} />
               編輯
@@ -197,10 +200,10 @@ export function StudyDetail({ id }) {
             <button
               type="button"
               onClick={handleToggleHighlight}
-              className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs ${
+              className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-xs ${
                 item.isHighlight
-                  ? 'bg-amber-500/15 text-amber-400'
-                  : 'border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
+                  ? 'bg-warn/15 text-warn'
+                  : 'btn-ghost'
               }`}
             >
               <Star size={14} fill={item.isHighlight ? 'currentColor' : 'none'} />
@@ -209,7 +212,7 @@ export function StudyDetail({ id }) {
             <select
               value={item.status}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100"
+              className="select-field px-3 py-1.5 text-xs"
             >
               <option value={STUDY_STATUS.READING}>閱讀中</option>
               <option value={STUDY_STATUS.COMPLETED}>已完成</option>
@@ -219,7 +222,7 @@ export function StudyDetail({ id }) {
               type="button"
               onClick={handleConvertToTask}
               disabled={converting}
-              className="flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700"
+              className="flex items-center gap-1 rounded-md bg-accent px-3 py-1.5 text-xs text-accent-on hover:bg-accent-hover"
             >
               <ArrowRightCircle size={14} />
               {selectedText ? '轉選取為待辦' : '轉為待辦'}
@@ -227,7 +230,7 @@ export function StudyDetail({ id }) {
             <button
               type="button"
               onClick={handleDelete}
-              className="flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs text-red-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+              className="btn-ghost flex items-center gap-1 px-3 py-1.5 text-xs text-danger hover:text-danger"
             >
               <Trash2 size={14} />
               刪除
@@ -235,7 +238,7 @@ export function StudyDetail({ id }) {
           </div>
 
           {selectedText && (
-            <p className="rounded-lg bg-blue-500/10 px-3 py-2 text-xs text-blue-400">
+            <p className="rounded-md bg-accent/10 px-3 py-2 text-xs text-accent">
               已選取：「{selectedText.slice(0, 80)}{selectedText.length > 80 ? '...' : ''}」
             </p>
           )}
@@ -243,7 +246,7 @@ export function StudyDetail({ id }) {
           <article
             onMouseUp={handleSelection}
             onTouchEnd={handleSelection}
-            className="prose prose-sm max-w-none rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 dark:prose-invert"
+            className="prose prose-sm max-w-none bento-card p-4 text-fg dark:prose-invert"
           >
             <Markdown>{item.content || '_（無內容）_'}</Markdown>
           </article>
@@ -252,12 +255,12 @@ export function StudyDetail({ id }) {
 
       {derivedTasks?.length > 0 && (
         <section className="space-y-2">
-          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">由此筆記衍生的待辦</h3>
+          <h3 className="text-sm font-medium text-muted">由此筆記衍生的待辦</h3>
           <ul className="space-y-1">
             {derivedTasks.filter(Boolean).map((task) => (
-              <li key={task.id} className="rounded-lg bg-white dark:bg-slate-900 px-3 py-2 text-sm">
+              <li key={task.id} className="bento-card px-3 py-2 text-sm text-fg">
                 {task.title}
-                <span className={`ml-2 text-xs ${task.status === 'done' ? 'text-green-400' : 'text-slate-500'}`}>
+                <span className={`ml-2 text-xs ${task.status === 'done' ? 'text-success' : 'text-meta'}`}>
                   {task.status === 'done' ? '已完成' : '待辦'}
                 </span>
               </li>
@@ -268,7 +271,7 @@ export function StudyDetail({ id }) {
 
       {related?.length > 0 && (
         <section className="space-y-2">
-          <h3 className="flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-400">
+          <h3 className="flex items-center gap-1 text-sm font-medium text-muted">
             <Link2 size={14} />
             關聯筆記
           </h3>
@@ -277,7 +280,7 @@ export function StudyDetail({ id }) {
               <li key={r.id}>
                 <Link
                   to={`/study/${r.id}`}
-                  className="block rounded-lg bg-white dark:bg-slate-900 px-3 py-2 text-sm hover:bg-slate-200 dark:hover:bg-slate-800"
+                  className="block rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm text-fg transition-colors hover:bg-surface"
                 >
                   {r.title}
                 </Link>

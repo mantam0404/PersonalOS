@@ -124,20 +124,28 @@ export function CalendarEvents() {
   if (!connected) {
     return (
       <section className="rounded-md border border-dashed border-border bg-surface p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 text-sm text-muted">
-            <Calendar size={16} className="shrink-0 text-accent" />
-            <span>今日行程 — 連接 Google Calendar 後顯示</span>
+        <div className="flex items-start gap-3">
+          <Calendar size={20} className="mt-0.5 shrink-0 text-accent" />
+          <div className="min-w-0 flex-1 space-y-3">
+            <p className="text-xs leading-relaxed text-muted">
+              連接 Google 日曆後，今日行程會顯示在這裡
+            </p>
+            <button
+              type="button"
+              onClick={handleConnect}
+              disabled={connecting}
+              className="flex w-full min-h-10 items-center justify-center gap-2.5 rounded-md bg-accent px-4 text-xs font-medium text-accent-on hover:bg-accent-hover disabled:opacity-60"
+            >
+              {connecting ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <Calendar size={18} strokeWidth={2} />
+              )}
+              <span className="whitespace-nowrap">
+                {connecting ? '連接中…' : '連接日曆'}
+              </span>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleConnect}
-            disabled={connecting}
-            className="flex min-h-9 items-center justify-center gap-2 rounded-md bg-accent px-4 text-sm font-medium text-accent-on hover:bg-accent-hover disabled:opacity-60"
-          >
-            {connecting ? <Loader2 size={16} className="animate-spin" /> : <Calendar size={16} />}
-            {connecting ? '連接中…' : '連接 Google Calendar'}
-          </button>
         </div>
         {error && <p className="mt-2 text-xs text-danger">{error}</p>}
       </section>

@@ -14,8 +14,8 @@ export function TodayView() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-fg">今日</h1>
-        <p className="text-sm text-muted">
+        <h1 className="page-title">今日</h1>
+        <p className="page-subtitle">
           {today} · 聚焦今天最重要的事
         </p>
       </header>

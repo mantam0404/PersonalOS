@@ -93,4 +93,49 @@ body {
     bottom: auto;
     top: 0;
   }
+
+  /* Shared form & page patterns */
+  .input-field {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background-color: var(--bg);
+    color: var(--fg);
+    outline: none;
+  }
+
+  .input-field:focus {
+    box-shadow: var(--focus-ring);
+  }
+
+  .select-field {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background-color: var(--bg);
+    color: var(--fg);
+  }
+
+  .btn-ghost {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: color var(--motion-fast) var(--ease-standard),
+      background-color var(--motion-fast) var(--ease-standard);
+  }
+
+  .btn-ghost:hover {
+    background-color: var(--surface-elevated);
+    color: var(--fg);
+  }
+
+  .page-title {
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    color: var(--fg);
+  }
+
+  .page-subtitle {
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
 }

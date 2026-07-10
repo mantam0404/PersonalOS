@@ -11,6 +11,8 @@ import {
   touchProject,
 } from '../../db'
 
+const inputClass = 'input-field min-h-10 flex-1 px-3 text-sm'
+
 export function ProjectDetail({ projectId }) {
   const project = useProject(projectId)
   const milestones = useProjectMilestones(projectId)
@@ -27,9 +29,9 @@ export function ProjectDetail({ projectId }) {
 
   if (!project) {
     return (
-      <div className="text-center text-slate-500">
+      <div className="text-center text-muted">
         <p>專案不存在</p>
-        <Link to="/domains" className="mt-2 text-blue-400">返回領域</Link>
+        <Link to="/domains" className="mt-2 text-accent">返回領域</Link>
       </div>
     )
   }
@@ -55,15 +57,15 @@ export function ProjectDetail({ projectId }) {
 
   return (
     <div className="space-y-6">
-      <Link to="/domains" className="inline-flex items-center gap-1 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200">
+      <Link to="/domains" className="inline-flex items-center gap-1 text-sm text-muted transition-colors hover:text-fg">
         <ArrowLeft size={16} />
         返回領域
       </Link>
 
       <header>
-        <h1 className="text-xl font-bold">{project.name}</h1>
+        <h1 className="text-xl font-semibold text-fg">{project.name}</h1>
         {project.description && (
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{project.description}</p>
+          <p className="mt-1 text-sm text-muted">{project.description}</p>
         )}
         <div className="mt-3 flex items-center gap-3">
           {domain && (
@@ -75,13 +77,13 @@ export function ProjectDetail({ projectId }) {
             </span>
           )}
           <div className="flex-1">
-            <div className="mb-1 flex justify-between text-xs text-slate-600 dark:text-slate-400">
+            <div className="mb-1 flex justify-between text-xs text-muted">
               <span>完成進度</span>
               <span>{project.progress ?? 0}%</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+            <div className="h-2 overflow-hidden rounded-full bg-border-soft">
               <div
-                className="h-full rounded-full bg-purple-500 transition-all"
+                className="h-full rounded-full bg-accent transition-all"
                 style={{ width: `${project.progress ?? 0}%` }}
               />
             </div>
@@ -91,11 +93,11 @@ export function ProjectDetail({ projectId }) {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">里程碑</h2>
+          <h2 className="text-sm font-semibold text-fg">里程碑</h2>
           <button
             type="button"
             onClick={() => setAddingMilestone(true)}
-            className="flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800"
+            className="btn-ghost flex items-center gap-1 px-3 py-1.5 text-xs"
           >
             <Plus size={14} />
             新增
@@ -109,27 +111,27 @@ export function ProjectDetail({ projectId }) {
               type="text"
               placeholder="里程碑名稱..."
               autoFocus
-              className="min-h-10 flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-purple-500"
+              className={inputClass}
             />
-            <button type="submit" className="rounded-lg bg-purple-600 px-4 text-sm text-white hover:bg-purple-700">
+            <button type="submit" className="rounded-md bg-accent px-4 text-sm text-accent-on hover:bg-accent-hover">
               建立
             </button>
           </form>
         )}
 
         {!milestones?.length ? (
-          <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-5 text-center text-sm text-slate-500">
+          <p className="rounded-md border border-dashed border-border p-5 text-center text-sm text-muted">
             新增里程碑與 Checklist 追蹤進度
           </p>
         ) : (
           milestones.map((m) => (
-            <div key={m.id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+            <div key={m.id} className="bento-card p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="font-medium">{m.title}</h3>
+                <h3 className="font-medium text-fg">{m.title}</h3>
                 <button
                   type="button"
                   onClick={() => deleteMilestone(m.id)}
-                  className="text-slate-500 hover:text-red-400"
+                  className="text-muted hover:text-danger"
                   aria-label="刪除里程碑"
                 >
                   <Trash2 size={14} />
@@ -145,7 +147,7 @@ export function ProjectDetail({ projectId }) {
                       onChange={() => toggleChecklistItem(item.id)}
                       className="rounded"
                     />
-                    <span className={`text-sm ${item.done ? 'text-slate-500 line-through' : ''}`}>
+                    <span className={`text-sm ${item.done ? 'text-muted line-through' : 'text-fg'}`}>
                       {item.text}
                     </span>
                   </li>
@@ -157,13 +159,13 @@ export function ProjectDetail({ projectId }) {
                   ref={(el) => { checklistRefs.current[m.id] = el }}
                   type="text"
                   placeholder="新增 Checklist 項目..."
-                  className="min-h-9 flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-purple-500"
+                  className="input-field min-h-9 flex-1 px-3 text-sm"
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddChecklist(m.id))}
                 />
                 <button
                   type="button"
                   onClick={() => handleAddChecklist(m.id)}
-                  className="rounded-lg border border-slate-300 dark:border-slate-700 px-3 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+                  className="btn-ghost px-3 text-xs"
                 >
                   加入
                 </button>
