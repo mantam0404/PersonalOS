@@ -88,4 +88,9 @@ body {
     transform: scaleX(1);
     transition: transform var(--motion-base) var(--ease-standard);
   }
+
+  .nav-tab-bottom.nav-tab-active::after {
+    bottom: auto;
+    top: 0;
+  }
 }

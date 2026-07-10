@@ -1,7 +1,9 @@
+import { NavLink } from 'react-router-dom'
 import { Wifi, WifiOff, Download, Sun, Moon } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { usePWAStatus } from '../hooks/usePWAStatus'
 import { BackupMenu } from './ui/BackupMenu'
+import { NAV_TABS } from './layout/navTabs'
 
 export function Navbar() {
   const { theme, cycleTheme } = useApp()
@@ -11,22 +13,39 @@ export function Navbar() {
   const themeLabel = theme === 'light' ? '淺色' : '深色'
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md">
-      <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-            OS
+    <header className="vercel-nav sticky top-0 z-50">
+      <div className="mx-auto flex max-w-container items-center justify-between gap-4 px-3 py-3 sm:px-4 md:px-6">
+        <div className="flex min-w-0 flex-1 items-center gap-6">
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-surface text-xs font-bold text-fg">
+              OS
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="text-sm font-semibold leading-tight text-fg">Personal OS</h1>
+              <p className="text-xs text-meta">行動流水線</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-base font-semibold leading-tight text-slate-900 dark:text-slate-100">Personal OS</h1>
-            <p className="text-xs text-slate-500">行動流水線</p>
-          </div>
+
+          <nav className="hidden items-center gap-1 md:flex">
+            {NAV_TABS.map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/'}
+                className={({ isActive }) =>
+                  `nav-tab px-3 py-2 text-sm ${isActive ? 'nav-tab-active' : ''}`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <span
-            className={`flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium ${
-              isOnline ? 'text-green-400' : 'text-amber-400'
+            className={`flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium ${
+              isOnline ? 'text-success' : 'text-warn'
             }`}
             title={isOnline ? '已連線' : '離線模式'}
           >
@@ -38,7 +57,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={promptInstall}
-              className="flex items-center gap-1 rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+              className="flex items-center gap-1 rounded-md bg-accent px-2 py-1.5 text-xs font-medium text-accent-on hover:bg-accent-hover"
             >
               <Download size={14} />
               <span className="hidden sm:inline">安裝</span>
@@ -50,7 +69,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={cycleTheme}
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
+            className="rounded-md p-2 text-muted transition-colors hover:bg-surface hover:text-fg"
             aria-label={`切換主題（目前：${themeLabel}）`}
             title={`切換為${theme === 'light' ? '深色' : '淺色'}模式`}
           >

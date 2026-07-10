@@ -6,7 +6,7 @@ import { PriorityBadge } from '../ui/Badge'
 import { HighlightStarButton } from './DailyHighlights'
 import { MAX_DAILY_HIGHLIGHTS } from '../../db/helpers'
 
-export function TodayTaskList() {
+export function TodayTaskList({ embedded = false }) {
   const tasks = useTodayTasks()
   const [message, setMessage] = useState('')
 
@@ -20,23 +20,23 @@ export function TodayTaskList() {
   }
 
   return (
-    <section className="space-y-3">
+    <section className={embedded ? 'space-y-3' : 'space-y-3'}>
       <div className="flex items-center gap-2">
-        <ListTodo size={20} className="text-blue-400" />
-        <h2 className="text-lg font-semibold">今日待辦</h2>
+        <ListTodo size={18} className="text-accent" />
+        <h2 className="text-sm font-semibold text-fg">今日待辦</h2>
         {tasks && (
-          <span className="rounded-full bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-400">
+          <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-xs text-muted">
             {tasks.length}
           </span>
         )}
       </div>
 
       {message && (
-        <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-400">{message}</p>
+        <p className="rounded-md bg-warn/10 px-3 py-2 text-sm text-warn">{message}</p>
       )}
 
       {!tasks?.length ? (
-        <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-5 text-center text-sm text-slate-500">
+        <p className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted">
           沒有待辦 — 從捕捉頁轉化一條記錄
         </p>
       ) : (
@@ -44,18 +44,18 @@ export function TodayTaskList() {
           {tasks.map((task) => (
             <li
               key={task.id}
-              className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3"
+              className="flex items-start gap-3 rounded-md border border-border bg-surface-elevated p-3"
             >
               <button
                 type="button"
                 onClick={() => handleComplete(task.id)}
-                className="mt-0.5 shrink-0 text-slate-500 hover:text-green-400"
+                className="mt-0.5 shrink-0 text-muted hover:text-success"
                 aria-label="完成"
               >
-                <Circle size={20} />
+                <Circle size={18} />
               </button>
               <div className="flex-1 space-y-1.5">
-                <p className="text-sm leading-relaxed">{task.title}</p>
+                <p className="text-sm leading-relaxed text-fg">{task.title}</p>
                 <PriorityBadge priority={task.priority} />
               </div>
               <HighlightStarButton task={task} onMaxReached={handleMaxReached} />
