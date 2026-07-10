@@ -1,58 +1,91 @@
 @import "tailwindcss";
+@import "./vercel-tokens.css";
+@import "./vercel-theme.css";
+
+@config "../../tailwind.config.js";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 html {
   -webkit-tap-highlight-color: transparent;
-  color-scheme: light;
-}
-
-html.dark {
-  color-scheme: dark;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
-}
-
-html.dark body {
-  @apply bg-slate-950 text-slate-100;
+  font-family: var(--font-body);
+  background-color: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer components {
-  .surface-page {
-    @apply min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  /* Vercel bento card */
+  .bento-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
   }
 
-  .surface-bar {
-    @apply border-slate-200 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95;
+  .bento-card-raised {
+    background-color: var(--surface-elevated);
+    box-shadow: var(--elev-raised);
+    border-radius: var(--radius-md);
   }
 
-  .surface-card {
-    @apply rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900;
+  /* Vercel nav bar */
+  .vercel-nav {
+    background-color: color-mix(in oklab, var(--bg) 80%, transparent);
+    backdrop-filter: var(--nav-blur);
+    -webkit-backdrop-filter: var(--nav-blur);
+    border-bottom: 1px solid var(--border);
   }
 
-  .surface-card-dashed {
-    @apply rounded-xl border border-dashed border-slate-300 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/50;
+  /* Bento grid layout */
+  .bento-grid {
+    display: grid;
+    gap: var(--bento-gap);
+    grid-template-columns: 1fr;
   }
 
-  .surface-input {
-    @apply rounded-lg border border-slate-300 bg-slate-100 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100;
+  @media (min-width: 768px) {
+    .bento-grid {
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: auto;
+    }
+
+    .bento-a { grid-column: span 12; }
+    .bento-b { grid-column: span 7; grid-row: span 2; }
+    .bento-c { grid-column: span 5; }
+    .bento-d { grid-column: span 5; }
+    .bento-e { grid-column: span 12; }
   }
 
-  .surface-muted {
-    @apply bg-slate-200 dark:bg-slate-800;
+  /* Nav tab underline animation */
+  .nav-tab {
+    position: relative;
+    color: var(--muted);
+    font-weight: 500;
+    transition: color var(--motion-fast) var(--ease-standard);
   }
 
-  .surface-hover {
-    @apply hover:bg-slate-200 dark:hover:bg-slate-800;
+  .nav-tab:hover {
+    color: var(--fg);
   }
 
-  .text-muted {
-    @apply text-slate-600 dark:text-slate-400;
+  .nav-tab-active {
+    color: var(--fg);
   }
 
-  .text-heading {
-    @apply text-slate-900 dark:text-slate-100;
+  .nav-tab-active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background-color: var(--fg);
+    transform: scaleX(1);
+    transition: transform var(--motion-base) var(--ease-standard);
   }
 }
