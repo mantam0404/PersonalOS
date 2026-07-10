@@ -1,4 +1,5 @@
 import { BentoCapture } from '../components/today/BentoCapture'
+import { CalendarEvents } from '../components/today/CalendarEvents'
 import { DailyHighlights } from '../components/today/DailyHighlights'
 import { TodayTaskList } from '../components/today/TodayTaskList'
 import { RoutineList } from '../components/today/RoutineList'
@@ -32,8 +33,11 @@ export function TodayView() {
           <TodayCompletedTasks embedded />
         </div>
 
-        <div className="bento-c bento-card p-5">
+        <div className="bento-c bento-card flex flex-col gap-5 p-5">
           <RoutineList />
+          <div className="border-t border-border pt-5">
+            <CalendarEvents />
+          </div>
         </div>
 
         <div className="bento-d bento-card p-5">

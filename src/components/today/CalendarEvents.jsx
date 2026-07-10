@@ -123,23 +123,23 @@ export function CalendarEvents() {
 
   if (!connected) {
     return (
-      <section className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900/50 p-4">
+      <section className="rounded-md border border-dashed border-border bg-surface p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-            <Calendar size={16} className="shrink-0 text-cyan-500" />
+          <div className="flex items-center gap-2 text-sm text-muted">
+            <Calendar size={16} className="shrink-0 text-accent" />
             <span>今日行程 — 連接 Google Calendar 後顯示</span>
           </div>
           <button
             type="button"
             onClick={handleConnect}
             disabled={connecting}
-            className="flex min-h-9 items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-60"
+            className="flex min-h-9 items-center justify-center gap-2 rounded-md bg-accent px-4 text-sm font-medium text-accent-on hover:bg-accent-hover disabled:opacity-60"
           >
             {connecting ? <Loader2 size={16} className="animate-spin" /> : <Calendar size={16} />}
             {connecting ? '連接中…' : '連接 Google Calendar'}
           </button>
         </div>
-        {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+        {error && <p className="mt-2 text-xs text-danger">{error}</p>}
       </section>
     )
   }
@@ -148,16 +148,16 @@ export function CalendarEvents() {
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Calendar size={18} className="text-cyan-400" />
-          <h2 className="text-sm font-medium">今日行程</h2>
-          {loading && <Loader2 size={14} className="animate-spin text-slate-500" />}
+          <Calendar size={18} className="text-accent" />
+          <h2 className="text-sm font-medium text-fg">今日行程</h2>
+          {loading && <Loader2 size={14} className="animate-spin text-muted" />}
         </div>
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={loadEvents}
             disabled={loading}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800"
+            className="rounded-md p-1.5 text-muted hover:bg-surface-elevated"
             aria-label="重新整理"
             title="重新整理"
           >
@@ -166,7 +166,7 @@ export function CalendarEvents() {
           <button
             type="button"
             onClick={handleDisconnect}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-red-400"
+            className="rounded-md p-1.5 text-muted hover:bg-surface-elevated hover:text-danger"
             aria-label="中斷連接"
             title="中斷連接"
           >
@@ -175,10 +175,10 @@ export function CalendarEvents() {
         </div>
       </div>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
 
       {!loading && !events.length ? (
-        <p className="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-400">
+        <p className="rounded-md bg-surface px-3 py-2 text-sm text-muted">
           今日沒有行程
         </p>
       ) : (
@@ -186,10 +186,10 @@ export function CalendarEvents() {
           {events.map((ev) => (
             <li
               key={ev.id}
-              className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm dark:bg-slate-900"
+              className="flex items-center justify-between rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm"
             >
-              <span>{ev.title}</span>
-              <span className="text-xs text-slate-500">{ev.time}</span>
+              <span className="text-fg">{ev.title}</span>
+              <span className="text-xs text-meta">{ev.time}</span>
             </li>
           ))}
         </ul>
