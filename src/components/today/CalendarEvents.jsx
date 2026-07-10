@@ -6,7 +6,6 @@ import {
   consumeOAuthReturn,
   disconnectGoogleCalendar,
   fetchTodayEvents,
-  getGoogleOAuthOriginHints,
   isGoogleCalendarConnected,
   isGoogleCalendarConfigured,
   isOAuthRedirectReturn,
@@ -22,8 +21,6 @@ export function CalendarEvents() {
   const [loading, setLoading] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState('')
-  const originHints = getGoogleOAuthOriginHints()
-  const activeOrigin = originHints[0]
 
   const loadEvents = useCallback(async () => {
     if (!isGoogleCalendarConnected()) {
@@ -58,11 +55,8 @@ export function CalendarEvents() {
         abortPendingGoogleOAuth()
         clearCalendarCache()
         if (!cancelled) {
-          const hint = /redirect_uri_mismatch/i.test(oauthReturnError)
-            ? `此 OAuth Client 未設定 Redirect URI。請改用 GIS 彈窗模式，並在 Authorized JavaScript origins 加入：${activeOrigin}`
-            : oauthReturnError
-          setError(`Google 授權失敗：${hint}`)
-          emitToast(`Google 授權失敗：${hint}`, 'error')
+          setError(`Google 授權失敗：${oauthReturnError}`)
+          emitToast(`Google 授權失敗：${oauthReturnError}`, 'error')
         }
         return
       }
@@ -90,7 +84,7 @@ export function CalendarEvents() {
     return () => {
       cancelled = true
     }
-  }, [activeOrigin, loadEvents])
+  }, [loadEvents])
 
   const handleConnect = async () => {
     if (!isGoogleCalendarConfigured()) {
@@ -145,55 +139,7 @@ export function CalendarEvents() {
             {connecting ? '連接中…' : '連接 Google Calendar'}
           </button>
         </div>
-        {connecting && (
-          <p className="mt-2 text-xs text-slate-500">
-            將開啟 Google 授權視窗。請保持在此 Cursor Agent 預覽內操作。
-          </p>
-        )}
         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
-        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-          Cloud Agent 提示：請在 Cursor 右側
-          {' '}
-          <strong>Ports</strong>
-          {' '}
-          面板點
-          {' '}
-          <strong>5173</strong>
-          {' '}
-          開啟應用。若在外部 Chrome 直接輸入
-          {' '}
-          <code className="rounded bg-slate-200 px-1 dark:bg-slate-800">127.0.0.1:5173</code>
-          {' '}
-          會出現「拒絕連線」，因為 dev server 在遠端環境。
-        </p>
-        {!isGoogleCalendarConfigured() && (
-          <p className="mt-2 text-xs text-slate-500">
-            需在 Google Cloud Console 建立 OAuth Client ID，並設定環境變數
-            {' '}
-            <code className="rounded bg-slate-200 px-1 dark:bg-slate-800">VITE_GOOGLE_CLIENT_ID</code>
-          </p>
-        )}
-        {isGoogleCalendarConfigured() && (
-          <div className="mt-2 space-y-1 text-xs text-slate-500">
-            <p>
-              請在 Google Cloud Console 的
-              {' '}
-              <strong>Authorized JavaScript origins</strong>
-              {' '}
-              加入（不是 Redirect URIs）：
-            </p>
-            <code className="block rounded bg-cyan-500/10 px-1 text-cyan-700 dark:text-cyan-300">{activeOrigin}</code>
-            {originHints.slice(1).map((origin) => (
-              <code key={origin} className="block rounded bg-slate-200 px-1 dark:bg-slate-800">{origin}</code>
-            ))}
-            <p className="pt-1">
-              並確認已啟用
-              {' '}
-              <strong>Google Calendar API</strong>
-              。
-            </p>
-          </div>
-        )}
       </section>
     )
   }
