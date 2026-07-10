@@ -11,10 +11,10 @@ import {
 import { Modal } from './ui/Modal'
 
 const AI_STATUS_LABELS = {
-  pending: { label: '待處理', className: 'bg-slate-700 text-slate-600 dark:text-slate-400' },
-  processing: { label: 'AI 處理中', className: 'bg-purple-500/15 text-purple-400' },
-  done: { label: '待確認', className: 'bg-blue-500/15 text-blue-400' },
-  error: { label: '處理失敗', className: 'bg-red-500/15 text-red-400' },
+  pending: { label: '待處理', className: 'bg-surface border border-border text-muted' },
+  processing: { label: 'AI 處理中', className: 'bg-accent/15 text-accent' },
+  done: { label: '待確認', className: 'bg-accent/15 text-accent' },
+  error: { label: '處理失敗', className: 'bg-danger/15 text-danger' },
 }
 
 const CLASS_LABELS = {
@@ -36,7 +36,7 @@ function AiBadge({ item }) {
         )}
       </span>
       {item.aiClassification && (
-        <span className="rounded bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 text-xs text-slate-600 dark:text-slate-400">
+        <span className="rounded border border-border bg-surface px-1.5 py-0.5 text-xs text-muted">
           {CLASS_LABELS[item.aiClassification] || item.aiClassification}
           {item.aiConfidence != null && ` ${Math.round(item.aiConfidence * 100)}%`}
         </span>
@@ -44,6 +44,9 @@ function AiBadge({ item }) {
     </div>
   )
 }
+
+const selectClass = 'select-field w-full px-3 py-2 text-sm'
+const inputClass = 'input-field min-h-10 w-full px-3 text-sm'
 
 export function InboxList() {
   const items = useInboxItems('pending')
@@ -101,21 +104,21 @@ export function InboxList() {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-2">
-        <Inbox size={20} className="text-blue-400" />
-        <h2 className="text-lg font-semibold">收件匣</h2>
+        <Inbox size={20} className="text-accent" />
+        <h2 className="text-sm font-semibold text-fg">收件匣</h2>
         {items && (
-          <span className="rounded-full bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+          <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-xs font-medium text-muted">
             {items.length}
           </span>
         )}
       </div>
 
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-meta">
         AI 會自動去贅詞並分流；信心 &lt; 70% 的項目留待手動確認
       </p>
 
       {!items?.length ? (
-        <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-sm text-slate-500">
+        <p className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted">
           收件匣是空的 — 輸入後 AI 會自動處理
         </p>
       ) : (
@@ -123,24 +126,24 @@ export function InboxList() {
           {items.map((item) => (
             <li
               key={item.id}
-              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3"
+              className="bento-card p-3"
             >
               <div className="mb-2">
                 <AiBadge item={item} />
               </div>
-              <p className="mb-2 text-sm leading-relaxed">
+              <p className="mb-2 text-sm leading-relaxed text-fg">
                 {item.cleanedText || item.text}
               </p>
               {item.rawText !== item.cleanedText && item.cleanedText && (
-                <p className="mb-2 text-xs text-slate-500 line-through">
+                <p className="mb-2 text-xs text-meta line-through">
                   原文：{item.rawText}
                 </p>
               )}
-              <div className="flex shrink-0 gap-1">
+              <div className="flex shrink-0 flex-wrap gap-1">
                 <button
                   type="button"
                   onClick={() => openConvert(item, 'task')}
-                  className="flex min-h-9 items-center gap-1 rounded-lg bg-blue-600 px-3 text-xs font-medium text-white hover:bg-blue-700"
+                  className="flex min-h-9 items-center gap-1 rounded-md bg-accent px-3 text-xs font-medium text-accent-on hover:bg-accent-hover"
                 >
                   <ArrowRightCircle size={14} />
                   轉待辦
@@ -148,7 +151,7 @@ export function InboxList() {
                 <button
                   type="button"
                   onClick={() => openConvert(item, 'study')}
-                  className="flex min-h-9 items-center gap-1 rounded-lg bg-green-600 px-3 text-xs font-medium text-white hover:bg-green-700"
+                  className="flex min-h-9 items-center gap-1 rounded-md bg-success px-3 text-xs font-medium text-white hover:opacity-90"
                 >
                   <BookOpen size={14} />
                   轉筆記
@@ -156,7 +159,7 @@ export function InboxList() {
                 <button
                   type="button"
                   onClick={() => handleArchive(item.id)}
-                  className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+                  className="btn-ghost flex min-h-9 items-center gap-1 px-3 text-xs font-medium"
                 >
                   <Archive size={14} />
                   封存
@@ -174,19 +177,19 @@ export function InboxList() {
       >
         {converting && (
           <div className="space-y-4">
-            <p className="rounded-lg bg-slate-200 dark:bg-slate-800 p-3 text-sm">
+            <p className="rounded-md border border-border bg-surface p-3 text-sm text-fg">
               {converting.cleanedText || converting.text}
             </p>
 
             <div>
-              <label className="mb-1 block text-sm font-medium">領域 Domain</label>
+              <label className="mb-1 block text-sm font-medium text-fg">領域 Domain</label>
               <select
                 value={domainId}
                 onChange={(e) => {
                   setDomainId(e.target.value)
                   setProjectId('')
                 }}
-                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+                className={selectClass}
               >
                 {domains?.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -199,11 +202,11 @@ export function InboxList() {
             {convertMode === 'task' ? (
               <>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">優先級</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">優先級</label>
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+                    className={selectClass}
                   >
                     <option value={TASK_PRIORITY.HIGH}>高</option>
                     <option value={TASK_PRIORITY.MEDIUM}>中</option>
@@ -211,11 +214,11 @@ export function InboxList() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">專案（選填）</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">專案（選填）</label>
                   <select
                     value={projectId}
                     onChange={(e) => setProjectId(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+                    className={selectClass}
                   >
                     <option value="">未分類</option>
                     {filteredProjects?.map((p) => (
@@ -228,11 +231,11 @@ export function InboxList() {
               </>
             ) : (
               <div>
-                <label className="mb-1 block text-sm font-medium">筆記類型</label>
+                <label className="mb-1 block text-sm font-medium text-fg">筆記類型</label>
                 <select
                   value={studyType}
                   onChange={(e) => setStudyType(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+                  className={selectClass}
                 >
                   <option value={STUDY_TYPE.NOTE}>筆記</option>
                   <option value={STUDY_TYPE.BOOK}>書籍</option>
@@ -246,7 +249,7 @@ export function InboxList() {
             <button
               type="button"
               onClick={handleConvert}
-              className="w-full rounded-xl bg-blue-600 py-3 text-sm font-medium text-white hover:bg-blue-700"
+              className="w-full rounded-md bg-accent py-3 text-sm font-medium text-accent-on hover:bg-accent-hover"
             >
               {convertMode === 'task' ? '建立待辦' : '建立筆記'}
             </button>

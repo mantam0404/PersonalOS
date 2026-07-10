@@ -34,7 +34,7 @@ export function StudyList({ typeFilter = 'all' }) {
 
   if (!items?.length) {
     return (
-      <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-sm text-slate-500">
+      <p className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted">
         知識庫是空的 — 從捕捉轉化或新增筆記
       </p>
     )
@@ -49,26 +49,26 @@ export function StudyList({ typeFilter = 'all' }) {
           <li key={item.id}>
             <Link
               to={`/study/${item.id}`}
-              className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 transition-colors hover:border-slate-300 dark:border-slate-700"
+              className="bento-card flex items-start gap-3 p-3 transition-colors hover:bg-surface-elevated"
             >
-              <Icon size={18} className="mt-0.5 shrink-0 text-green-400" />
+              <Icon size={18} className="mt-0.5 shrink-0 text-success" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-medium">{item.title || '未命名'}</p>
+                  <p className="text-sm font-medium text-fg">{item.title || '未命名'}</p>
                   {item.isHighlight && (
-                    <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-xs text-amber-400">
+                    <span className="rounded bg-warn/15 px-1.5 py-0.5 text-xs text-warn">
                       重點
                     </span>
                   )}
                 </div>
                 {item.content && (
-                  <p className="mt-1 truncate text-xs text-slate-500">{item.content}</p>
+                  <p className="mt-1 truncate text-xs text-meta">{item.content}</p>
                 )}
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  <span className="rounded bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 text-xs text-slate-600 dark:text-slate-400">
+                  <span className="rounded border border-border bg-surface px-1.5 py-0.5 text-xs text-muted">
                     {TYPE_LABELS[item.type]}
                   </span>
-                  <span className="rounded bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 text-xs text-slate-600 dark:text-slate-400">
+                  <span className="rounded border border-border bg-surface px-1.5 py-0.5 text-xs text-muted">
                     {STATUS_LABELS[item.status]}
                   </span>
                   {domain && (
@@ -80,7 +80,7 @@ export function StudyList({ typeFilter = 'all' }) {
                     </span>
                   )}
                   {item.tags?.map((tag) => (
-                    <span key={tag} className="rounded bg-purple-500/10 px-1.5 py-0.5 text-xs text-purple-400">
+                    <span key={tag} className="rounded bg-accent/10 px-1.5 py-0.5 text-xs text-accent">
                       #{tag}
                     </span>
                   ))}

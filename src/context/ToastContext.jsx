@@ -23,12 +23,12 @@ export function ToastProvider({ children }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`max-w-sm rounded-xl px-4 py-3 text-sm font-medium shadow-lg backdrop-blur-md ${
+            className={`max-w-sm rounded-md border px-4 py-3 text-sm font-medium shadow-raised backdrop-blur-md ${
               t.type === 'success'
-                ? 'bg-green-600/90 text-white'
+                ? 'border-success/30 bg-success/90 text-white'
                 : t.type === 'error'
-                  ? 'bg-red-600/90 text-white'
-                  : 'bg-slate-200 dark:bg-slate-800/95 text-slate-900 dark:text-slate-100'
+                  ? 'border-danger/30 bg-danger/90 text-white'
+                  : 'border-border bg-surface-elevated/95 text-fg'
             }`}
           >
             {t.message}

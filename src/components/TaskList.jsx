@@ -4,6 +4,8 @@ import { useTasks } from '../hooks/useIndexedDB'
 import { completeTask, TASK_CONTEXT, TASK_PRIORITY } from '../db'
 import { PriorityBadge, ContextBadge } from './ui/Badge'
 
+const selectClass = 'select-field px-3 py-1.5 text-xs'
+
 export function TaskList() {
   const tasks = useTasks('todo')
   const [priorityFilter, setPriorityFilter] = useState('all')
@@ -25,10 +27,10 @@ export function TaskList() {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-2">
-        <ListTodo size={20} className="text-green-500" />
-        <h2 className="text-lg font-semibold">待辦</h2>
+        <ListTodo size={20} className="text-success" />
+        <h2 className="text-sm font-semibold text-fg">待辦</h2>
         {filtered && (
-          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium dark:bg-slate-700">
+          <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-xs font-medium text-muted">
             {filtered.length}
           </span>
         )}
@@ -38,7 +40,7 @@ export function TaskList() {
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs dark:border-slate-600 dark:bg-slate-800"
+          className={selectClass}
         >
           <option value="all">全部優先級</option>
           <option value={TASK_PRIORITY.HIGH}>高</option>
@@ -48,7 +50,7 @@ export function TaskList() {
         <select
           value={contextFilter}
           onChange={(e) => setContextFilter(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs dark:border-slate-600 dark:bg-slate-800"
+          className={selectClass}
         >
           <option value="all">全部情境</option>
           <option value={TASK_CONTEXT.WORK}>Work</option>
@@ -58,7 +60,7 @@ export function TaskList() {
       </div>
 
       {!filtered?.length ? (
-        <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-600">
+        <p className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted">
           沒有待辦事項 — 從收件匣轉化一條記錄
         </p>
       ) : (
@@ -66,18 +68,18 @@ export function TaskList() {
           {filtered.map((task) => (
             <li
               key={task.id}
-              className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800"
+              className="bento-card flex items-start gap-3 p-3"
             >
               <button
                 type="button"
                 onClick={() => handleComplete(task.id)}
-                className="mt-0.5 shrink-0 text-slate-600 dark:text-slate-400 hover:text-green-500"
+                className="mt-0.5 shrink-0 text-muted hover:text-success"
                 aria-label="標記完成"
               >
                 <Circle size={20} />
               </button>
               <div className="flex-1 space-y-1.5">
-                <p className="text-sm leading-relaxed">{task.title}</p>
+                <p className="text-sm leading-relaxed text-fg">{task.title}</p>
                 <div className="flex flex-wrap gap-1.5">
                   <PriorityBadge priority={task.priority} />
                   <ContextBadge context={task.context} />
@@ -97,14 +99,14 @@ export function CompletedTasks() {
   if (!tasks?.length) return null
 
   return (
-    <details className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-      <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-slate-500">
+    <details className="bento-card">
+      <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-muted">
         已完成 ({tasks.length})
       </summary>
-      <ul className="space-y-1 border-t border-slate-200 px-4 py-3 dark:border-slate-700">
+      <ul className="space-y-1 border-t border-border px-4 py-3">
         {tasks.map((task) => (
-          <li key={task.id} className="flex items-center gap-2 text-sm text-slate-500 line-through">
-            <CheckCircle2 size={16} className="shrink-0 text-green-500" />
+          <li key={task.id} className="flex items-center gap-2 text-sm text-muted line-through">
+            <CheckCircle2 size={16} className="shrink-0 text-success" />
             {task.title}
           </li>
         ))}

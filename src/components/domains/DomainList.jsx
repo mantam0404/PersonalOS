@@ -5,6 +5,8 @@ import { addDomain, updateDomain, deleteDomain } from '../../db'
 
 const PRESET_COLORS = ['#3b82f6', '#22c55e', '#a855f7', '#f59e0b', '#ef4444', '#64748b']
 
+const inputClass = 'input-field min-h-10 w-full px-3 text-sm'
+
 export function DomainList() {
   const domains = useDomains()
   const inputRef = useRef(null)
@@ -38,10 +40,10 @@ export function DomainList() {
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Layers size={20} className="text-blue-400" />
-          <h2 className="text-lg font-semibold">領域 Domains</h2>
+          <Layers size={20} className="text-accent" />
+          <h2 className="text-sm font-semibold text-fg">領域 Domains</h2>
           {domains && (
-            <span className="rounded-full bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+            <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-xs font-medium text-muted">
               {domains.length}
             </span>
           )}
@@ -49,7 +51,7 @@ export function DomainList() {
         <button
           type="button"
           onClick={() => setIsAdding((v) => !v)}
-          className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800"
+          className="btn-ghost flex min-h-9 items-center gap-1 px-3 text-xs font-medium"
         >
           <Plus size={14} />
           新增領域
@@ -57,13 +59,13 @@ export function DomainList() {
       </div>
 
       {isAdding && (
-        <form onSubmit={handleAdd} className="space-y-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
+        <form onSubmit={handleAdd} className="bento-card space-y-3 p-4">
           <input
             ref={inputRef}
             type="text"
             placeholder="領域名稱，如：工作、日文學習..."
             autoFocus
-            className="min-h-10 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+            className={inputClass}
           />
           <div className="flex gap-2">
             {PRESET_COLORS.map((color) => (
@@ -72,7 +74,7 @@ export function DomainList() {
                 type="button"
                 onClick={() => setSelectedColor(color)}
                 className={`h-7 w-7 rounded-full transition-transform ${
-                  selectedColor === color ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900' : ''
+                  selectedColor === color ? 'scale-110 ring-2 ring-fg ring-offset-2 ring-offset-bg' : ''
                 }`}
                 style={{ backgroundColor: color }}
                 aria-label={`選擇顏色 ${color}`}
@@ -81,7 +83,7 @@ export function DomainList() {
           </div>
           <button
             type="submit"
-            className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
+            className="w-full rounded-md bg-accent py-2.5 text-sm font-medium text-accent-on hover:bg-accent-hover"
           >
             建立領域
           </button>
@@ -89,7 +91,7 @@ export function DomainList() {
       )}
 
       {!domains?.length ? (
-        <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-sm text-slate-500">
+        <p className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted">
           載入中...
         </p>
       ) : (
@@ -97,7 +99,7 @@ export function DomainList() {
           {domains.map((domain) => (
             <li
               key={domain.id}
-              className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3"
+              className="bento-card flex items-center gap-3 p-3"
             >
               <span
                 className="h-4 w-4 shrink-0 rounded-full"
@@ -108,18 +110,18 @@ export function DomainList() {
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(domain.id)}
-                  className="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-2 py-1 text-sm outline-none focus:border-blue-500"
+                  className="input-field flex-1 px-2 py-1 text-sm"
                   autoFocus
                 />
               ) : (
-                <span className="flex-1 text-sm font-medium">{domain.name}</span>
+                <span className="flex-1 text-sm font-medium text-fg">{domain.name}</span>
               )}
               <div className="flex gap-1">
                 {editingId === domain.id ? (
                   <button
                     type="button"
                     onClick={() => handleSaveEdit(domain.id)}
-                    className="rounded-lg px-2 py-1 text-xs text-blue-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+                    className="rounded-md px-2 py-1 text-xs text-accent hover:bg-surface"
                   >
                     儲存
                   </button>
@@ -130,7 +132,7 @@ export function DomainList() {
                       setEditingId(domain.id)
                       setEditName(domain.name)
                     }}
-                    className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
+                    className="rounded-md p-2 text-muted hover:bg-surface hover:text-fg"
                     aria-label="編輯"
                   >
                     <Pencil size={14} />
@@ -140,7 +142,7 @@ export function DomainList() {
                   <button
                     type="button"
                     onClick={() => handleDelete(domain.id)}
-                    className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-red-400"
+                    className="rounded-md p-2 text-muted hover:bg-surface hover:text-danger"
                     aria-label="刪除"
                   >
                     <Trash2 size={14} />

@@ -1,7 +1,7 @@
 const PRIORITY_STYLES = {
-  high: 'bg-red-500/15 text-red-600 dark:text-red-400',
-  medium: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
-  low: 'bg-slate-500/15 text-slate-600 dark:text-slate-400',
+  high: 'bg-danger/15 text-danger',
+  medium: 'bg-warn/15 text-warn',
+  low: 'bg-surface border border-border text-muted',
 }
 
 const PRIORITY_LABELS = {
@@ -12,10 +12,10 @@ const PRIORITY_LABELS = {
 
 export function Badge({ children, variant = 'default', className = '' }) {
   const variants = {
-    default: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
-    work: 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
-    life: 'bg-green-500/15 text-green-600 dark:text-green-400',
-    'on-the-go': 'bg-purple-500/15 text-purple-600 dark:text-purple-400',
+    default: 'bg-surface border border-border text-muted',
+    work: 'bg-accent/15 text-accent',
+    life: 'bg-success/15 text-success',
+    'on-the-go': 'bg-warn/15 text-warn',
     ...PRIORITY_STYLES,
   }
 
