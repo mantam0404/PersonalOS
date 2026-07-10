@@ -3,8 +3,8 @@ import { createContext, useContext, useEffect, useState } from 'react'
 const THEME_KEY = 'personal-os-theme'
 
 const THEME_COLORS = {
-  light: '#f8fafc',
-  dark: '#0f172a',
+  light: '#ffffff',
+  dark: '#0a0a0a',
 }
 
 const AppContext = createContext(null)

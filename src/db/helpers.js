@@ -25,6 +25,10 @@ export function isSameDay(a, b) {
   return startOfDay(a) === startOfDay(b)
 }
 
+export function subDays(ts, days) {
+  return startOfDay(ts) - days * MS_PER_DAY
+}
+
 export function seededPick(items, seed) {
   if (!items.length) return null
   let hash = 0

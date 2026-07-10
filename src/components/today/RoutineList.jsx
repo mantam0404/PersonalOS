@@ -3,6 +3,7 @@ import { RefreshCw, Plus, Flame } from 'lucide-react'
 import { useRoutines } from '../../hooks/useToday'
 import { useDomains } from '../../hooks/useIndexedDB'
 import { addRoutine, completeRoutine, deleteRoutine, isRoutineDoneToday } from '../../db'
+import { StreakBarChart } from './StreakBarChart'
 
 export function RoutineList() {
   const routines = useRoutines()
@@ -34,13 +35,13 @@ export function RoutineList() {
   }
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <RefreshCw size={20} className="text-green-400" />
-          <h2 className="text-lg font-semibold">常規習慣</h2>
+          <RefreshCw size={18} className="text-success" />
+          <h2 className="text-sm font-semibold text-fg">常規習慣</h2>
           {routines && (
-            <span className="rounded-full bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-400">
+            <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-xs text-muted">
               {routines.length}
             </span>
           )}
@@ -48,7 +49,7 @@ export function RoutineList() {
         <button
           type="button"
           onClick={openAdd}
-          className="flex min-h-9 items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800"
+          className="flex min-h-8 items-center gap-1 rounded-md border border-border px-2.5 text-xs font-medium text-fg-2 transition-colors hover:bg-surface-elevated"
         >
           <Plus size={14} />
           新增
@@ -56,18 +57,18 @@ export function RoutineList() {
       </div>
 
       {isAdding && (
-        <form onSubmit={handleAdd} className="space-y-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
+        <form onSubmit={handleAdd} className="space-y-2 rounded-md border border-border bg-surface-elevated p-3">
           <input
             ref={inputRef}
             type="text"
             placeholder="如：吃維他命、每日背單字..."
             autoFocus
-            className="min-h-10 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+            className="min-h-9 w-full rounded-md border border-border bg-bg px-3 text-sm text-fg outline-none focus:shadow-focus"
           />
           <select
             value={selectedDomainId}
             onChange={(e) => setSelectedDomainId(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+            className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg"
           >
             {domains?.map((d) => (
               <option key={d.id} value={d.id}>
@@ -77,7 +78,7 @@ export function RoutineList() {
           </select>
           <button
             type="submit"
-            className="w-full rounded-lg bg-green-600 py-2.5 text-sm font-medium text-white hover:bg-green-700"
+            className="w-full rounded-md bg-success py-2 text-sm font-medium text-white hover:opacity-90"
           >
             建立習慣
           </button>
@@ -85,7 +86,7 @@ export function RoutineList() {
       )}
 
       {!routines?.length ? (
-        <p className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-5 text-center text-sm text-slate-500">
+        <p className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted">
           建立每日習慣，追蹤連續天數
         </p>
       ) : (
@@ -95,29 +96,29 @@ export function RoutineList() {
             return (
               <li
                 key={routine.id}
-                className={`flex items-center gap-3 rounded-xl border p-3 ${
+                className={`flex items-center gap-3 rounded-md border p-3 ${
                   doneToday
-                    ? 'border-green-500/20 bg-green-500/5'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900'
+                    ? 'border-success/20 bg-success/5'
+                    : 'border-border bg-surface-elevated'
                 }`}
               >
                 <button
                   type="button"
                   onClick={() => handleComplete(routine.id)}
                   disabled={doneToday}
-                  className={`flex min-h-10 min-w-10 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex min-h-9 min-w-9 items-center justify-center rounded-md text-xs font-medium transition-colors ${
                     doneToday
-                      ? 'bg-green-600/20 text-green-400'
-                      : 'border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-green-500 hover:text-green-400'
+                      ? 'bg-success/15 text-success'
+                      : 'border border-border text-muted hover:border-success hover:text-success'
                   }`}
                 >
                   {doneToday ? '✓' : '完成'}
                 </button>
-                <div className="flex-1">
-                  <p className={`text-sm ${doneToday ? 'text-slate-600 dark:text-slate-400 line-through' : ''}`}>
+                <div className="flex-1 min-w-0">
+                  <p className={`truncate text-sm ${doneToday ? 'text-muted line-through' : 'text-fg'}`}>
                     {routine.title}
                   </p>
-                  <div className="mt-1 flex items-center gap-1 text-xs text-orange-400">
+                  <div className="mt-1 flex items-center gap-1 text-xs text-warn">
                     <Flame size={12} />
                     <span>{routine.streak || 0} 天連續</span>
                   </div>
@@ -125,7 +126,7 @@ export function RoutineList() {
                 <button
                   type="button"
                   onClick={() => handleDelete(routine.id)}
-                  className="rounded-lg px-2 py-1 text-xs text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-red-400"
+                  className="shrink-0 rounded-md px-2 py-1 text-xs text-muted hover:bg-surface hover:text-danger"
                 >
                   刪除
                 </button>
@@ -134,6 +135,8 @@ export function RoutineList() {
           })}
         </ul>
       )}
+
+      <StreakBarChart routines={routines} />
     </section>
   )
 }
