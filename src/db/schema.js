@@ -74,6 +74,23 @@ class PersonalOSDatabase extends Dexie {
           if (!item.captureType) item.captureType = 'text'
         })
       })
+
+    this.version(3).stores({
+      inbox: 'id, status, createdAt, aiClassification',
+      tasks:
+        'id, status, priority, context, projectId, sourceInboxId, createdAt, domainId, type, isDailyHighlight, lastTouchedAt',
+      projects: 'id, status, createdAt, domainId, endDate',
+      domains: 'id, name, sortOrder, createdAt',
+      routines: 'id, domainId, title, streak, lastDoneAt, createdAt',
+      studyItems:
+        'id, type, domainId, projectId, status, isHighlight, lastTouchedAt, createdAt',
+      studyLinks: 'id, sourceId, targetId, type',
+      milestones: 'id, projectId, sortOrder, createdAt',
+      checklistItems: 'id, milestoneId, done, sortOrder',
+      wikiNotes: 'id, obsidianPath, contentHash, mtime, syncedAt, *tags',
+      wikiLinks: 'id, sourcePath, targetPath, type',
+      wikiSyncState: 'key',
+    })
   }
 }
 

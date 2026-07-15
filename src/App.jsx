@@ -4,6 +4,7 @@ import { AppShell } from './components/layout/AppShell'
 import { TodayView } from './views/TodayView'
 import { CaptureView } from './views/CaptureView'
 import { DomainsView } from './views/DomainsView'
+import { WikiView } from './views/WikiView'
 import { useSyncData } from './hooks/useSyncData'
 
 const StudyView = lazy(() => import('./views/StudyView').then((m) => ({ default: m.StudyView })))
@@ -46,6 +47,7 @@ function App() {
             }
           />
           <Route path="domains" element={<DomainsView />} />
+          <Route path="wiki" element={<WikiView />} />
           <Route
             path="domains/project/:projectId"
             element={

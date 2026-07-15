@@ -7,6 +7,15 @@ const base = process.env.BASE_PATH || '/'
 
 export default defineConfig({
   base,
+  server: {
+    proxy: {
+      '/obsidian-bridge': {
+        target: 'http://localhost:8787',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/obsidian-bridge/, ''),
+      },
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

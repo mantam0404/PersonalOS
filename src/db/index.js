@@ -16,6 +16,7 @@ export * from './services/today'
 export * from './services/capture'
 export * from './services/milestones'
 export * from './services/backup'
+export * from './services/wiki'
 
 export async function completeTask(id) {
   const now = Date.now()
