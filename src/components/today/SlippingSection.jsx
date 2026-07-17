@@ -1,5 +1,6 @@
 import { AlertTriangle } from 'lucide-react'
 import { useSlippingItems } from '../../hooks/useToday'
+import { useSlippingDaysThreshold } from '../../hooks/usePhaseFeatures'
 import { handleSlippingToday } from '../../db'
 import { daysSince } from '../../db/helpers'
 
@@ -11,6 +12,7 @@ const TYPE_LABELS = {
 
 export function SlippingSection({ alwaysShow = false }) {
   const items = useSlippingItems()
+  const slippingDays = useSlippingDaysThreshold()
 
   const handleToday = async (item) => {
     await handleSlippingToday(item.type, item.id)
@@ -30,7 +32,7 @@ export function SlippingSection({ alwaysShow = false }) {
         )}
       </div>
 
-      <p className="text-xs text-meta">超過 5 天未更新的項目</p>
+      <p className="text-xs text-meta">超過 {slippingDays ?? 5} 天未更新的項目</p>
 
       {!items?.length ? (
         <p className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted">

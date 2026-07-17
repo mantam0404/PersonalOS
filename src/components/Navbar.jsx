@@ -3,6 +3,7 @@ import { Wifi, WifiOff, Download, Sun, Moon } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { usePWAStatus } from '../hooks/usePWAStatus'
 import { BackupMenu } from './ui/BackupMenu'
+import { NotificationFeed } from './notifications/NotificationFeed'
 import { NAV_TABS } from './layout/navTabs'
 
 export function Navbar() {
@@ -65,6 +66,8 @@ export function Navbar() {
           )}
 
           <BackupMenu />
+
+          <NotificationFeed />
 
           <button
             type="button"

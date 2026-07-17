@@ -79,10 +79,69 @@ export async function processCapture(rawText) {
   }
 }
 
-export async function chatWithNotes(_question, _notes) {
+export async function chatWithNotes(question, notes = []) {
   const apiUrl = import.meta.env.VITE_LLM_API_URL
-  if (!apiUrl) {
-    return { answer: 'LLM API 尚未配置。請設定 VITE_LLM_API_URL。', source: 'stub' }
+  const q = question?.trim()
+  if (!q) return { answer: '請輸入問題', source: 'local', citations: [] }
+
+  const scored = notes
+    .map((note) => {
+      const text = `${note.title || ''} ${note.content || ''}`.toLowerCase()
+      const terms = q.toLowerCase().split(/\s+/).filter(Boolean)
+      const score = terms.reduce((sum, term) => (text.includes(term) ? sum + 1 : sum), 0)
+      return { note, score }
+    })
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+
+  const citations = scored.map(({ note }) => ({
+    title: note.title || note.obsidianPath || '未命名',
+    path: note.obsidianPath || null,
+    snippet: (note.content || '').slice(0, 200),
+  }))
+
+  if (!scored.length) {
+    return {
+      answer: '在已同步的筆記中找不到相關內容。請先同步 Wiki 或新增學習筆記。',
+      source: 'local',
+      citations: [],
+    }
   }
-  return { answer: 'Chat with notes — API 接口已預留', source: 'stub' }
+
+  const context = scored
+    .map(({ note }, i) => `[${i + 1}] ${note.title || note.obsidianPath}\n${(note.content || '').slice(0, 800)}`)
+    .join('\n\n')
+
+  if (apiUrl) {
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'chat_with_notes',
+          question: q,
+          context,
+          citations,
+        }),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        return {
+          answer: data.answer || data.text || '',
+          source: 'llm',
+          citations: data.citations || citations,
+        }
+      }
+    } catch (err) {
+      console.warn('[AI] chatWithNotes LLM unavailable', err)
+    }
+  }
+
+  const top = scored[0].note
+  return {
+    answer: `根據「${top.title || top.obsidianPath}」：\n\n${(top.content || '').slice(0, 400)}…`,
+    source: 'local',
+    citations,
+  }
 }

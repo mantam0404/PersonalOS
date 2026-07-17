@@ -12,6 +12,7 @@ import {
   STUDY_STATUS,
   STUDY_TYPE,
 } from '../../db'
+import { QuoteAnnotationsPanel } from './QuoteAnnotationsPanel'
 
 const inputClass = 'input-field min-h-10 w-full px-3 text-sm'
 const selectClass = 'select-field w-full px-3 py-2 text-sm'
@@ -129,6 +130,7 @@ export function StudyDetail({ id }) {
               <option value={STUDY_TYPE.ARTICLE}>文章</option>
               <option value={STUDY_TYPE.QUOTE}>金句</option>
               <option value={STUDY_TYPE.HIGHLIGHT}>重點</option>
+              <option value={STUDY_TYPE.JOURNAL}>日誌</option>
             </select>
             <select
               value={editForm.status}
@@ -170,7 +172,15 @@ export function StudyDetail({ id }) {
       ) : (
         <>
           <header>
+            {item.coverUrl && (
+              <img
+                src={item.coverUrl}
+                alt={item.title}
+                className="mb-3 h-32 w-auto rounded-md border border-border object-cover"
+              />
+            )}
             <h1 className="text-xl font-semibold text-fg">{item.title}</h1>
+            {item.author && <p className="mt-1 text-sm text-muted">{item.author}</p>}
             <div className="mt-2 flex flex-wrap gap-2">
               {domain && (
                 <span
@@ -250,6 +260,8 @@ export function StudyDetail({ id }) {
           >
             <Markdown>{item.content || '_（無內容）_'}</Markdown>
           </article>
+
+          <QuoteAnnotationsPanel studyId={id} selectedText={selectedText} />
         </>
       )}
 

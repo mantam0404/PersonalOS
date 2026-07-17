@@ -1,0 +1,12 @@
+{
+  "name": "personal-os-obsidian-bridge",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Read-only Obsidian vault bridge for Personal OS Wiki / LLM ingest",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "validate:phase0": "node scripts/validate-phase0.mjs"
+  }
+}

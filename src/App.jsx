@@ -4,7 +4,9 @@ import { AppShell } from './components/layout/AppShell'
 import { TodayView } from './views/TodayView'
 import { CaptureView } from './views/CaptureView'
 import { DomainsView } from './views/DomainsView'
+import { WikiView } from './views/WikiView'
 import { useSyncData } from './hooks/useSyncData'
+import { useBridgeCaptureSync } from './hooks/useBridgeCaptureSync'
 
 const StudyView = lazy(() => import('./views/StudyView').then((m) => ({ default: m.StudyView })))
 const StudyDetailView = lazy(() =>
@@ -22,6 +24,7 @@ const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
 
 function App() {
   useSyncData()
+  useBridgeCaptureSync()
 
   return (
     <BrowserRouter basename={basename}>
@@ -46,6 +49,7 @@ function App() {
             }
           />
           <Route path="domains" element={<DomainsView />} />
+          <Route path="wiki" element={<WikiView />} />
           <Route
             path="domains/project/:projectId"
             element={

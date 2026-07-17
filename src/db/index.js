@@ -16,6 +16,12 @@ export * from './services/today'
 export * from './services/capture'
 export * from './services/milestones'
 export * from './services/backup'
+export * from './services/wiki'
+export * from './services/notifications'
+export * from './services/pendingCaptures'
+export * from './services/activityLog'
+export * from './services/appSettings'
+export * from './services/quoteAnnotations'
 
 export async function completeTask(id) {
   const now = Date.now()

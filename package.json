@@ -8,6 +8,11 @@
     "build": "vite build",
     "build:gh-pages": "BASE_PATH=/PersonalOS/ vite build",
     "lint": "oxlint",
+    "bridge": "node bridge/src/server.js",
+    "bridge:validate": "node bridge/scripts/validate-phase0.mjs",
+    "bridge:test-api": "node bridge/scripts/validate-phase1.mjs",
+    "bridge:test-capture": "node bridge/scripts/validate-capture.mjs",
+    "test:voice-parser": "node scripts/test-voice-parser.mjs",
     "test:calendar": "node scripts/test-calendar.mjs",
     "preview": "vite preview"
   },
