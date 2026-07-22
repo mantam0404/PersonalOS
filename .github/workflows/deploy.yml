@@ -50,4 +50,4 @@ jobs:
           publish_dir: ./dist
           publish_branch: gh-pages
           force_orphan: true
-          commit_message: 'Deploy ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.sha }}'
+          commit_message: "Deploy ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.sha }}"
