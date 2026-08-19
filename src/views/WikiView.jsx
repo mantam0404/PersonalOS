@@ -1,6 +1,5 @@
 import { WikiSyncPanel } from '../components/wiki/WikiSyncPanel'
 import { WikiNoteList } from '../components/wiki/WikiNoteList'
-import { WikiAskPanel } from '../components/wiki/WikiAskPanel'
 
 export function WikiView() {
   return (
@@ -8,12 +7,11 @@ export function WikiView() {
       <header>
         <h1 className="page-title">Wiki</h1>
         <p className="page-subtitle">
-          從 Obsidian vault 同步筆記，作為 LLM 知識庫基礎
+          從 Obsidian vault 同步筆記，作為 LLM 知識庫基礎（Phase 0–1）
         </p>
       </header>
 
       <WikiSyncPanel />
-      <WikiAskPanel />
       <WikiNoteList />
     </div>
   )

@@ -9,7 +9,6 @@ const DEFAULT_VAULT = path.resolve(__dirname, '../fixtures/sample-vault')
 const PORT = Number(process.env.OBSIDIAN_BRIDGE_PORT || 8787)
 const VAULT_PATH = path.resolve(process.env.OBSIDIAN_VAULT_PATH || DEFAULT_VAULT)
 const API_KEY = process.env.OBSIDIAN_BRIDGE_API_KEY || ''
-const CAPTURE_TOKEN = process.env.CAPTURE_TOKEN || ''
 const EXCLUDE = (process.env.OBSIDIAN_BRIDGE_EXCLUDE || '')
   .split(',')
   .map((s) => s.trim())
@@ -19,9 +18,6 @@ const scanOptions = { exclude: EXCLUDE }
 
 /** @type {{ notes: import('./vault/parser.js').parseMarkdownNote extends (...args: infer A) => infer R ? R[] : never, scannedAt: number } | null} */
 let cache = null
-
-/** @type {Array<{ id: string, text: string, source: string, capturedAt: number }>} */
-const captureQueue = []
 
 async function refreshCache() {
   const notes = await scanVault(VAULT_PATH, scanOptions)
@@ -63,20 +59,6 @@ function checkAuth(req, origin) {
   return headerKey === API_KEY
 }
 
-function checkCaptureAuth(req) {
-  if (!CAPTURE_TOKEN) return true
-  const headerKey = req.headers.authorization?.replace(/^Bearer\s+/i, '')
-  return headerKey === CAPTURE_TOKEN
-}
-
-async function readJsonBody(req) {
-  const chunks = []
-  for await (const chunk of req) chunks.push(chunk)
-  const raw = Buffer.concat(chunks).toString('utf8')
-  if (!raw) return {}
-  return JSON.parse(raw)
-}
-
 async function handleRequest(req, res) {
   const origin = req.headers.origin || '*'
   const url = new URL(req.url || '/', `http://${req.headers.host}`)
@@ -84,60 +66,6 @@ async function handleRequest(req, res) {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, corsHeaders(origin))
     res.end()
-    return
-  }
-
-  if (req.method === 'POST' && url.pathname === '/capture') {
-    if (!checkCaptureAuth(req)) {
-      unauthorized(res, origin)
-      return
-    }
-    try {
-      const body = await readJsonBody(req)
-      const text = String(body.text || '').trim()
-      if (!text) {
-        json(res, 400, { error: 'text is required' })
-        return
-      }
-      const item = {
-        id: crypto.randomUUID(),
-        text,
-        source: body.source || 'mobile',
-        capturedAt: Date.now(),
-      }
-      captureQueue.push(item)
-      json(res, 201, { ok: true, id: item.id })
-    } catch (err) {
-      json(res, 400, { error: err.message || 'Invalid JSON' })
-    }
-    return
-  }
-
-  if (req.method === 'GET' && url.pathname === '/capture/pending') {
-    if (!checkCaptureAuth(req)) {
-      unauthorized(res, origin)
-      return
-    }
-    json(res, 200, { items: [...captureQueue], count: captureQueue.length })
-    return
-  }
-
-  if (req.method === 'POST' && url.pathname === '/capture/ack') {
-    if (!checkCaptureAuth(req)) {
-      unauthorized(res, origin)
-      return
-    }
-    try {
-      const body = await readJsonBody(req)
-      const ids = new Set(body.ids || [])
-      const before = captureQueue.length
-      for (let i = captureQueue.length - 1; i >= 0; i--) {
-        if (ids.has(captureQueue[i].id)) captureQueue.splice(i, 1)
-      }
-      json(res, 200, { ok: true, removed: before - captureQueue.length })
-    } catch (err) {
-      json(res, 400, { error: err.message || 'Invalid JSON' })
-    }
     return
   }
 
