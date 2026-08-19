@@ -1,5 +1,7 @@
 import { QuickCaptureInput } from '../components/QuickCaptureInput'
 import { InboxList } from '../components/InboxList'
+import { PendingCapturesSection } from '../components/capture/PendingCapturesSection'
+import { IntegrationsPanel } from '../components/settings/IntegrationsPanel'
 
 export function CaptureView() {
   return (
@@ -9,7 +11,9 @@ export function CaptureView() {
         <p className="page-subtitle">零阻力輸入，靈感不流失</p>
       </header>
       <QuickCaptureInput inline />
+      <PendingCapturesSection />
       <InboxList />
+      <IntegrationsPanel />
     </div>
   )
 }

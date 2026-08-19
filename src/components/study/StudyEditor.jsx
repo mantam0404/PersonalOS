@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { addStudyItem, STUDY_TYPE, STUDY_STATUS } from '../../db'
 import { useDomains } from '../../hooks/useIndexedDB'
+import { fetchBookCover } from '../../services/bookCovers'
 
 const inputClass = 'input-field min-h-10 w-full px-3 text-sm'
 const selectClass = 'select-field w-full px-3 py-2 text-sm'
@@ -22,7 +23,7 @@ export function StudyEditor({ onCreated }) {
     const content = contentRef.current?.value?.trim()
     if (!title) return
 
-    await addStudyItem({
+    const item = await addStudyItem({
       type,
       title,
       content: content || '',
@@ -30,6 +31,14 @@ export function StudyEditor({ onCreated }) {
       status,
       isHighlight,
     })
+
+    if (type === STUDY_TYPE.BOOK) {
+      const cover = await fetchBookCover(title)
+      if (cover?.coverUrl) {
+        const { updateStudyItem } = await import('../../db')
+        await updateStudyItem(item.id, { coverUrl: cover.coverUrl, author: cover.author })
+      }
+    }
 
     titleRef.current.value = ''
     contentRef.current.value = ''
@@ -81,6 +90,7 @@ export function StudyEditor({ onCreated }) {
           <option value={STUDY_TYPE.ARTICLE}>文章</option>
           <option value={STUDY_TYPE.QUOTE}>金句</option>
           <option value={STUDY_TYPE.HIGHLIGHT}>重點</option>
+          <option value={STUDY_TYPE.JOURNAL}>日誌</option>
         </select>
         <select
           value={status}

@@ -3,6 +3,7 @@ import { createId } from '../helpers'
 import { INBOX_STATUS, TASK_STATUS, TASK_PRIORITY, TASK_TYPE, STUDY_TYPE, STUDY_STATUS, CAPTURE_TYPE } from '../constants'
 import { getDefaultDomainId } from './domains'
 import { processCapture, isMeaningfulText } from '../../services/ai'
+import { executeVoiceActions } from '../../services/actionExecutor'
 import { emitToast } from '../../context/ToastContext'
 
 function extractTags(text) {
@@ -16,6 +17,10 @@ export async function addInboxItem(text, captureType = CAPTURE_TYPE.TEXT) {
   if (!isMeaningfulText(trimmed)) {
     emitToast('內容太短或無意義，請重新輸入', 'error')
     return null
+  }
+
+  if (captureType === CAPTURE_TYPE.VOICE) {
+    return processVoiceCapture(trimmed)
   }
 
   const item = {
@@ -200,4 +205,47 @@ export async function convertInboxToStudy(inboxId, { domainId, type, isHighlight
 
   emitToast(`已建立筆記：${studyItem.title.slice(0, 40)}`, 'success')
   return studyItem
+}
+
+export async function processVoiceCapture(transcript) {
+  const item = {
+    id: createId(),
+    text: transcript,
+    rawText: transcript,
+    status: INBOX_STATUS.PENDING,
+    captureType: CAPTURE_TYPE.VOICE,
+    aiStatus: 'processing',
+    createdAt: Date.now(),
+  }
+  await db.inbox.add(item)
+
+  try {
+    const { results, source } = await executeVoiceActions(transcript)
+
+    const succeeded = results.filter((r) =>
+      ['task_created', 'task_completed', 'study_created', 'activity_logged'].includes(r.type),
+    )
+    const pending = results.filter((r) => r.type === 'pending')
+
+    if (succeeded.length) {
+      const summary = succeeded.map((r) => r.notification?.title || r.type).join('、')
+      emitToast(`${summary}（${source === 'llm' ? 'AI' : '本地'}）`, 'success')
+      await db.inbox.update(item.id, {
+        status: INBOX_STATUS.ARCHIVED,
+        aiStatus: 'voice_action',
+      })
+    } else if (pending.length) {
+      emitToast('語音指令需要確認 — 請在待處理佇列中選擇', 'info')
+      await db.inbox.update(item.id, { aiStatus: 'voice_pending' })
+    } else {
+      await processInboxItem(item.id)
+    }
+
+    return { item, results, source }
+  } catch (err) {
+    console.error('[Capture] voice action failed', err)
+    await db.inbox.update(item.id, { aiStatus: 'error' })
+    emitToast('語音處理失敗，已存入收件匣', 'error')
+    return { item, error: err.message }
+  }
 }

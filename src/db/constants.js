@@ -25,6 +25,13 @@ export const TASK_TYPE = {
   ROUTINE: 'routine',
 }
 
+export const TASK_SOURCE = {
+  MANUAL: 'manual',
+  VOICE: 'voice',
+  INBOX: 'inbox',
+  CAPTURE: 'capture',
+}
+
 export const PROJECT_STATUS = {
   ACTIVE: 'active',
   COMPLETED: 'completed',
@@ -36,6 +43,7 @@ export const STUDY_TYPE = {
   NOTE: 'note',
   QUOTE: 'quote',
   HIGHLIGHT: 'highlight',
+  JOURNAL: 'journal',
 }
 
 export const STUDY_STATUS = {
@@ -48,6 +56,20 @@ export const CAPTURE_TYPE = {
   TEXT: 'text',
   VOICE: 'voice',
 }
+
+export const NOTIFICATION_STATUS = {
+  UNREAD: 'unread',
+  READ: 'read',
+  DISMISSED: 'dismissed',
+}
+
+export const PENDING_CAPTURE_STATUS = {
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  EXPIRED: 'expired',
+}
+
+export const DEFAULT_SLIPPING_DAYS = 5
 
 export const DEFAULT_DOMAINS = [
   { name: '工作', color: '#3b82f6', sortOrder: 0, legacyContext: TASK_CONTEXT.WORK },

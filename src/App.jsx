@@ -6,6 +6,7 @@ import { CaptureView } from './views/CaptureView'
 import { DomainsView } from './views/DomainsView'
 import { WikiView } from './views/WikiView'
 import { useSyncData } from './hooks/useSyncData'
+import { useBridgeCaptureSync } from './hooks/useBridgeCaptureSync'
 
 const StudyView = lazy(() => import('./views/StudyView').then((m) => ({ default: m.StudyView })))
 const StudyDetailView = lazy(() =>
@@ -23,6 +24,7 @@ const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
 
 function App() {
   useSyncData()
+  useBridgeCaptureSync()
 
   return (
     <BrowserRouter basename={basename}>

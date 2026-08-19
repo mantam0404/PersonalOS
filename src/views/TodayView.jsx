@@ -6,6 +6,8 @@ import { RoutineList } from '../components/today/RoutineList'
 import { SlippingSection } from '../components/today/SlippingSection'
 import { ResurfacingCard } from '../components/today/ResurfacingCard'
 import { TodayCompletedTasks } from '../components/today/TodayCompletedTasks'
+import { DueTasksSection } from '../components/today/DueTasksSection'
+import { DomainStatusCard } from '../components/today/DomainStatusCard'
 import { getTodayKey } from '../db/helpers'
 
 export function TodayView() {
@@ -26,6 +28,7 @@ export function TodayView() {
         </div>
 
         <div className="bento-b bento-card flex flex-col gap-6 p-5">
+          <DueTasksSection />
           <DailyHighlights embedded />
           <div className="border-t border-border pt-5">
             <TodayTaskList embedded />
@@ -44,8 +47,11 @@ export function TodayView() {
           <SlippingSection alwaysShow />
         </div>
 
-        <div className="bento-e bento-card p-5">
-          <ResurfacingCard />
+        <div className="bento-e bento-card flex flex-col gap-5 p-5">
+          <DomainStatusCard />
+          <div className="border-t border-border pt-5">
+            <ResurfacingCard />
+          </div>
         </div>
       </div>
     </div>

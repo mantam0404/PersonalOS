@@ -1,8 +1,16 @@
 import { db } from '../schema'
-import { SLIPPING_DAYS, MS_PER_DAY } from '../helpers'
+import { startOfDay, MS_PER_DAY } from '../helpers'
+import { getSlippingDays as getSlippingDaysSetting } from './appSettings'
+import { DEFAULT_SLIPPING_DAYS } from '../constants'
+
+export async function getSlippingDaysThreshold() {
+  const configured = await getSlippingDaysSetting()
+  return configured ?? DEFAULT_SLIPPING_DAYS
+}
 
 export async function getSlippingItems() {
-  const cutoff = Date.now() - SLIPPING_DAYS * MS_PER_DAY
+  const slippingDays = await getSlippingDaysThreshold()
+  const cutoff = Date.now() - slippingDays * MS_PER_DAY
 
   const [tasks, projects, studyItems] = await Promise.all([
     db.tasks
@@ -26,4 +34,45 @@ export async function getSlippingItems() {
       lastTouchedAt: s.lastTouchedAt,
     })),
   ].sort((a, b) => a.lastTouchedAt - b.lastTouchedAt)
+}
+
+export async function getDueTasks() {
+  const endOfToday = startOfDay() + MS_PER_DAY - 1
+  const tasks = await db.tasks
+    .filter((t) => t.status === 'todo' && t.dueDate != null && t.dueDate <= endOfToday)
+    .toArray()
+
+  const now = Date.now()
+  return tasks
+    .map((t) => ({
+      ...t,
+      isOverdue: t.dueDate < startOfDay(now),
+    }))
+    .sort((a, b) => (a.dueDate || 0) - (b.dueDate || 0))
+}
+
+export async function getDomainStatus() {
+  const [domains, tasks, projects, slippingDays] = await Promise.all([
+    db.domains.orderBy('sortOrder').toArray(),
+    db.tasks.toArray(),
+    db.projects.toArray(),
+    getSlippingDaysThreshold(),
+  ])
+
+  const cutoff = Date.now() - slippingDays * MS_PER_DAY
+
+  return domains.map((domain) => {
+    const domainTasks = tasks.filter((t) => t.domainId === domain.id && t.status === 'todo')
+    const domainProjects = projects.filter((p) => p.domainId === domain.id && p.status === 'active')
+    const slippingCount =
+      domainTasks.filter((t) => t.lastTouchedAt < cutoff).length +
+      domainProjects.filter((p) => p.lastTouchedAt < cutoff).length
+
+    return {
+      domain,
+      activeTasks: domainTasks.length,
+      activeProjects: domainProjects.length,
+      slippingCount,
+    }
+  })
 }
